@@ -2,31 +2,70 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Database\Factories\UserFactory;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password'])]
-#[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
-    /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+        'role',
+        'department',
+        'phone',
+    ];
+
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+    ];
+
     /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
+     * Bezoeken waarbij deze gebruiker de gastheer is
      */
-    protected function casts(): array
+    public function hostedVisits()
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        return $this->hasMany(Visit::class, 'host_employee_id');
+    }
+
+    /**
+     * Bezoeken die door deze gebruiker zijn geregistreerd
+     */
+    public function registeredVisits()
+    {
+        return $this->hasMany(Visit::class, 'registered_by_user_id');
+    }
+
+    /**
+     * Helper method: Is deze gebruiker een admin?
+     */
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    /**
+     * Helper method: Is deze gebruiker een receptionist?
+     */
+    public function isReceptionist(): bool
+    {
+        return $this->role === 'receptionist';
+    }
+
+    /**
+     * Helper method: Is deze gebruiker een medewerker?
+     */
+    public function isEmployee(): bool
+    {
+        return $this->role === 'employee';
     }
 }
