@@ -1,0 +1,180 @@
+🧾 📌 Receptionist – User Stories
+1. Bezoeker inchecken
+
+User Story
+
+Als receptionist wil ik een bezoeker kunnen inchecken, zodat het bezoek correct wordt geregistreerd.
+
+Acceptatiecriteria
+
+Naam invoeren (verplicht)
+Bedrijf invoeren (optioneel)
+Contactpersoon selecteren
+Reden van bezoek invoeren
+Verwachte vertrektijd instellen
+Opslaan werkt en bezoeker verschijnt in overzicht
+
+Prioriteit: 🔥 Hoog
+
+2. Bezoeker uitchecken
+
+Als receptionist wil ik een bezoeker kunnen uitchecken, zodat de vertrektijd wordt geregistreerd.
+
+Acceptatiecriteria
+
+Knop “uitchecken” beschikbaar
+Tijd wordt automatisch opgeslagen
+Bezoeker verdwijnt uit actieve lijst
+
+Prioriteit: 🔥 Hoog
+
+3. Realtime overzicht bekijken
+
+Als receptionist wil ik een lijst zien van alle aanwezige bezoekers, zodat ik weet wie er in het pand is.
+
+Acceptatiecriteria
+
+Alleen bezoekers zonder uitchecktijd zichtbaar
+Overzicht toont naam, bedrijf, contactpersoon
+Lijst wordt automatisch geüpdatet (of refresh)
+
+Prioriteit: 🔥 Hoog
+
+4. Bezoekershistorie bekijken
+
+Als receptionist wil ik eerdere bezoeken kunnen bekijken, zodat ik informatie kan terugvinden.
+
+Acceptatiecriteria
+
+Filter op datum (gisteren/week)
+Overzicht met alle velden
+Sorteren mogelijk
+
+Prioriteit: 🟡 Middel
+
+5. Bezoeker zoeken
+
+Als receptionist wil ik bezoekers kunnen zoeken, zodat ik snel informatie kan vinden.
+
+Acceptatiecriteria
+
+Zoeken op naam en bedrijf
+Resultaten worden gefilterd weergegeven
+
+Prioriteit: 🟡 Middel
+
+👨‍💼 📧 Medewerker – User Stories
+6. E-mail notificatie ontvangen
+
+Als medewerker wil ik een e-mail ontvangen wanneer mijn bezoeker arriveert, zodat ik hem kan ophalen.
+
+Acceptatiecriteria
+
+E-mail wordt automatisch verstuurd bij check-in
+Bevat naam bezoeker en reden
+
+Prioriteit: 🔥 Hoog
+
+7. Eigen bezoeken bekijken
+
+Als medewerker wil ik mijn geplande en afgeronde bezoeken zien, zodat ik overzicht heb.
+
+Acceptatiecriteria
+
+Overzicht van komende en eerdere bezoeken
+Duidelijk verschil tussen actief en afgerond
+
+Prioriteit: 🟡 Middel
+
+8. Bezoek vooraf aanmelden
+
+Als medewerker wil ik een bezoek vooraf kunnen registreren, zodat de receptie voorbereid is.
+
+Acceptatiecriteria
+
+Formulier voor invoer bezoekgegevens
+Verschijnt bij receptionist
+
+Prioriteit: 🔥 Hoog
+
+👨‍💻 🔐 Beheerder – User Stories
+9. Medewerkers beheren
+
+Als beheerder wil ik accounts kunnen aanmaken en beheren, zodat gebruikers toegang hebben.
+
+Acceptatiecriteria
+
+Nieuwe gebruiker toevoegen
+Rollen toewijzen (receptionist/medewerker/admin)
+Gebruiker bewerken/verwijderen
+
+Prioriteit: 🔥 Hoog
+
+10. Bezoekersdata exporteren
+
+Als beheerder wil ik data kunnen exporteren, zodat ik rapportages kan maken.
+
+Acceptatiecriteria
+
+Export naar CSV/Excel
+Inclusief historische data
+
+Prioriteit: 🟡 Middel
+
+11. Noodlijst opvragen
+
+Als beheerder wil ik een actuele lijst van aanwezigen, zodat ik weet wie er binnen is bij nood.
+
+Acceptatiecriteria
+
+Alleen actieve bezoekers
+Overzicht met naam, bedrijf, contactpersoon
+
+Prioriteit: 🔥 Hoog
+
+12. Statistieken bekijken
+
+Als beheerder wil ik statistieken zien, zodat ik inzicht krijg in bezoekersgedrag.
+
+Acceptatiecriteria
+
+Drukste dag
+Gemiddelde bezoekduur
+Meest bezochte medewerkers
+
+Prioriteit: 🟢 Laag / Nice-to-have
+
+⚙️ 🔧 Technische User Stories
+13. Inloggen systeem
+
+Als gebruiker wil ik kunnen inloggen, zodat mijn toegang beveiligd is.
+
+14. Rollen en rechten
+
+Als systeem wil ik rollen beheren, zodat gebruikers alleen relevante functies zien.
+
+15. Realtime filtering
+
+Als systeem wil ik alleen actieve bezoekers tonen, zodat het overzicht correct blijft.
+
+16. Database structuur
+
+Als developer wil ik een goede database, zodat data correct wordt opgeslagen.
+
+💡 Extra (sterk voor hogere cijfers)
+
+Voeg deze toe als je extra punten wilt scoren:
+
+17. Validatie bij invoer
+
+Geen lege naam, correcte tijd etc.
+
+18. Responsive design
+
+Werkt op tablet bij receptie
+
+19. Dashboard
+
+Overzicht met snelle info (aantal bezoekers vandaag)
+
+20. Notificaties in systeem (naast email)
