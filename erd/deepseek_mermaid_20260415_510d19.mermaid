@@ -1,0 +1,39 @@
+erDiagram
+    users {
+        bigint id PK
+        string name
+        string email UK
+        string password
+        enum role "admin, receptionist, employee"
+        string department "bv. IT, Marketing, HR"
+        string phone "nullable"
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    visitors {
+        bigint id PK
+        string name
+        string email UK "nullable"
+        string company "nullable"
+        string phone "nullable"
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    visits {
+        bigint id PK
+        bigint visitor_id FK
+        bigint host_employee_id FK
+        bigint registered_by_user_id FK
+        timestamp check_in_time
+        timestamp check_out_time "nullable"
+        text reason_of_visit "nullable"
+        boolean badge_sent "default false"
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    users ||--o{ visits : is_host
+    users ||--o{ visits : registers
+    visitors ||--o{ visits : has
