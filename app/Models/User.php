@@ -5,6 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\Employee;
+use App\Models\Visitor;
+use App\Models\Notification;
 
 class User extends Authenticatable
 {
@@ -29,43 +34,36 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
-    /**
-     * Bezoeken waarbij deze gebruiker de gastheer is
-     */
-    public function hostedVisits()
+public function employee()
     {
-        return $this->hasMany(Visit::class, 'host_employee_id');
+        return $this->hasOne(Employee::class);
     }
 
-    /**
-     * Bezoeken die door deze gebruiker zijn geregistreerd
-     */
-    public function registeredVisits()
+    public function visitor()
     {
-        return $this->hasMany(Visit::class, 'registered_by_user_id');
+        return $this->hasOne(Visitor::class);
     }
 
-    /**
-     * Helper method: Is deze gebruiker een admin?
-     */
-    public function isAdmin(): bool
+    public function notifications()
     {
-        return $this->role === 'admin';
+        return $this->hasMany(Notification::class);
     }
 
-    /**
-     * Helper method: Is deze gebruiker een receptionist?
-     */
-    public function isReceptionist(): bool
+    // Auto employee/visitor maken
+    protected static function booted()
     {
-        return $this->role === 'receptionist';
-    }
+        static::created(function ($user) {
+            if ($user->role === 'employee') {
+                Employee::create([
+                    'user_id' => $user->id,
+                ]);
+            }
 
-    /**
-     * Helper method: Is deze gebruiker een medewerker?
-     */
-    public function isEmployee(): bool
-    {
-        return $this->role === 'employee';
+            if ($user->role === 'visitor') {
+                Visitor::create([
+                    'user_id' => $user->id,
+                ]);
+            }
+        });
     }
-}
+};
