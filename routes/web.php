@@ -29,55 +29,55 @@ Route::middleware(['auth'])->group(function () {
 
 
 // Bezoeken
-Route::get('/visits', [VisitController::class, 'index'])->name('visit.index');
-Route::get('/visits/create', [VisitController::class, 'create'])->name('visit.create');
-Route::post('/visits', [VisitController::class, 'store'])->name('visit.store');
-Route::get('/visits/{visit}', [VisitController::class, 'show'])->name('visit.show');
-Route::get('/visits/{visit}/edit', [VisitController::class, 'edit'])->name('visit.edit');
-Route::put('/visits/{visit}', [VisitController::class, 'update'])->name('visit.update');
-Route::delete('/visits/{visit}', [VisitController::class, 'destroy'])->name('visit.destroy');
-Route::get('/visits/checkin/{visit}', [VisitController::class, 'checkin'])->name('visit.checkin');
-Route::get('/visits/checkout/{visit}', [VisitController::class, 'checkout'])->name('visit.checkout');
+Route::get('/Visits', [VisitController::class, 'index'])->name('visits.index');
+Route::get('/Visits/create', [VisitController::class, 'create'])->name('visits.create');
+Route::post('/Visits', [VisitController::class, 'store'])->name('visits.store');
+Route::get('/Visits/{visit}', [VisitController::class, 'show'])->name('visits.show');
+Route::get('/Visits/{visit}/edit', [VisitController::class, 'edit'])->name('visits.edit');
+Route::put('/Visits/{visit}', [VisitController::class, 'update'])->name('visits.update');
+Route::delete('/Visits/{visit}', [VisitController::class, 'destroy'])->name('visits.destroy');
+Route::get('/Visits/checkin/{visit}', [VisitController::class, 'checkin'])->name('visits.checkin');
+Route::get('/Visits/checkout/{visit}', [VisitController::class, 'checkout'])->name('visits.checkout');
 
 // Medewerkers
-Route::get('employees', [EmployeeController::class, 'index'])->name('employee.index');
-Route::get('employees/create', [EmployeeController::class, 'create'])->name('employee.create');
-Route::post('employees', [EmployeeController::class, 'store'])->name('employee.store');
-Route::get('employees/{employee}', [EmployeeController::class, 'show'])->name('employee.show');
-Route::get('employees/{employee}/edit', [EmployeeController::class, 'edit'])->name('employee.edit');
-Route::put('employees/{employee}', [EmployeeController::class, 'update'])->name('employee.update');
-Route::delete('employees/{employee}', [EmployeeController::class, 'destroy'])->name('employee.destroy');
+Route::get('/Employees', [EmployeeController::class, 'index'])->name('employees.index');
+Route::get('/Employees/create', [EmployeeController::class, 'create'])->name('employees.create');
+Route::post('/Employees', [EmployeeController::class, 'store'])->name('employees.store');
+Route::get('/Employees/{employee}', [EmployeeController::class, 'show'])->name('employees.show');
+Route::get('/Employees/{employee}/edit', [EmployeeController::class, 'edit'])->name('employees.edit');
+Route::put('/Employees/{employee}', [EmployeeController::class, 'update'])->name('employees.update');
+Route::delete('/Employees/{employee}', [EmployeeController::class, 'destroy'])->name('employees.destroy');
 
 // Afdelingen
-Route::get('departments', [DepartmentController::class, 'index'])->name('department.index');
-Route::get('departments/create', [DepartmentController::class, 'create'])->name('department.create');
-Route::post('departments', [DepartmentController::class, 'store'])->name('department.store');
-Route::get('departments/{department}', [DepartmentController::class, 'show'])->name('department.show');
-Route::get('departments/{department}/edit', [DepartmentController::class, 'edit'])->name('department.edit');
-Route::put('departments/{department}', [DepartmentController::class, 'update'])->name('department.update');
-Route::delete('departments/{department}', [DepartmentController::class, 'destroy'])->name('department.destroy');
+Route::get('/Departments', [DepartmentController::class, 'index'])->name('departments.index');
+Route::get('/Departments/create', [DepartmentController::class, 'create'])->name('departments.create');
+Route::post('/Departments', [DepartmentController::class, 'store'])->name('departments.store');
+Route::get('/Departments/{department}', [DepartmentController::class, 'show'])->name('departments.show');
+Route::get('/Departments/{department}/edit', [DepartmentController::class, 'edit'])->name('departments.edit');
+Route::put('/Departments/{department}', [DepartmentController::class, 'update'])->name('departments.update');
+Route::delete('/Departments/{department}', [DepartmentController::class, 'destroy'])->name('departments.destroy');
 
 // Gebruikers
-Route::get('users', [UserController::class, 'index'])->name('user.index');
-Route::get('users/create', [UserController::class, 'create'])->name('user.create');
-Route::post('users', [UserController::class, 'store'])->name('user.store');
-Route::get('users/{user}', [UserController::class, 'show'])->name('user.show');
-Route::get('users/{user}/edit', [UserController::class, 'edit'])->name('user.edit');
-Route::put('users/{user}', [UserController::class, 'update'])->name('user.update');
-Route::delete('users/{user}', [UserController::class, 'destroy'])->name('user.destroy');
+Route::get('/Users', [UserController::class, 'index'])->name('users.index');
+Route::get('/Users/create', [UserController::class, 'create'])->name('users.create');
+Route::post('/Users', [UserController::class, 'store'])->name('users.store');
+Route::get('/Users/{user}', [UserController::class, 'show'])->name('users.show');
+Route::get('/Users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
+Route::put('/Users/{user}', [UserController::class, 'update'])->name('users.update');
+Route::delete('/Users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
 
 // Bezoekers
-Route::get('visitors', [VisitorController::class, 'index'])->name('visitor.index');
-Route::get('visitors/create', [VisitorController::class, 'create'])->name('visitor.create');
-Route::post('visitors', [VisitorController::class, 'store'])->name('visitor.store');
-Route::get('visitors/{visitor}', [VisitorController::class, 'show'])->name('visitor.show');
-Route::get('visitors/{visitor}/edit', [VisitorController::class, 'edit'])->name('visitor.edit');
-Route::put('visitors/{visitor}', [VisitorController::class, 'update'])->name('visitor.update');
-Route::delete('visitors/{visitor}', [VisitorController::class, 'destroy'])->name('visitor.destroy');
+Route::get('/Visitors', [VisitorController::class, 'index'])->name('visitors.index');
+Route::get('/Visitors/create', [VisitorController::class, 'create'])->name('visitors.create');
+Route::post('/Visitors', [VisitorController::class, 'store'])->name('visitors.store');
+Route::get('/Visitors/{visitor}', [VisitorController::class, 'show'])->name('visitors.show');
+Route::get('/Visitors/{visitor}/edit', [VisitorController::class, 'edit'])->name('visitors.edit');
+Route::put('/Visitors/{visitor}', [VisitorController::class, 'update'])->name('visitors.update');
+Route::delete('/Visitors/{visitor}', [VisitorController::class, 'destroy'])->name('visitors.destroy');
 
 // notificaties
-Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
-Route::post('/notifications/{notification}/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
-Route::delete('/notifications/{notification}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
+Route::get('/Notifications', [NotificationController::class, 'index'])->name('notifications.index');
+Route::post('/Notifications/{notification}/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
+Route::delete('/Notifications/{notification}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
 
 require __DIR__.'/auth.php';
