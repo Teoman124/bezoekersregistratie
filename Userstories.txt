@@ -1,0 +1,59 @@
+Bezoeker inchecken
+
+Als receptionist wil ik een bezoeker kunnen registreren bij binnenkomst, zodat het bezoek wordt vastgelegd.
+
+2. Bezoeker uitchecken
+
+Als receptionist wil ik een bezoeker kunnen uitchecken, zodat de vertrektijd wordt opgeslagen.
+
+3. Realtime overzicht bekijken
+
+Als receptionist wil ik alle aanwezige bezoekers zien, zodat ik weet wie er in het pand is.
+
+4. Bezoekershistorie bekijken
+
+Als receptionist wil ik eerdere bezoeken kunnen bekijken, zodat ik gegevens kan terugvinden.
+
+5. Bezoeker zoeken
+
+Als receptionist wil ik bezoekers kunnen zoeken op naam of bedrijf, zodat ik snel informatie vind.
+
+6. Foutmelding bij ongeldige invoer
+
+Als receptionist wil ik foutmeldingen krijgen bij verkeerde invoer, zodat ik correcte gegevens opsla.
+
+🔹 Medewerker (5 stuks)
+7. E-mail ontvangen bij check-in
+
+Als medewerker wil ik een e-mail krijgen wanneer mijn bezoeker arriveert, zodat ik hem kan ophalen.
+
+8. Eigen bezoeken bekijken
+
+Als medewerker wil ik mijn geplande en afgeronde bezoeken zien, zodat ik overzicht heb.
+
+9. Bezoek vooraf aanmelden
+
+Als medewerker wil ik een bezoek vooraf registreren, zodat de receptie voorbereid is.
+
+10. Status van bezoek zien
+
+Als medewerker wil ik zien of mijn bezoeker al is aangekomen of vertrokken, zodat ik op de hoogte blijf.
+
+11. Alleen eigen data zien
+
+Als medewerker wil ik alleen mijn eigen bezoeken zien, zodat gegevens beschermd blijven.
+
+🔹 Beheerder (4 stuks)
+12. Gebruikers beheren
+
+Als beheerder wil ik gebruikersaccounts aanmaken en beheren, zodat iedereen toegang heeft.
+
+13. Rollen toewijzen
+
+Als beheerder wil ik rollen kunnen toewijzen, zodat rechten correct ingesteld zijn.
+
+14. Noodlijst bekijken
+
+Als beheerder wil ik een actuele lijst van aanwezigen zien, zodat ik weet wie er binnen is bij nood.
+
+15. Bezoekersdata exporteren
