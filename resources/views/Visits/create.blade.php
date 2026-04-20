@@ -3,7 +3,7 @@
     <h1>Create Visit</h1>
 
   
-    <form action="{{ route('bezoeken.store') }}" method="POST">
+    <form action="{{ route('visits.store') }}" method="POST">
         @csrf
 
         <div>
@@ -32,9 +32,7 @@
             
         </div>
 
-        <div>
-            <label for="status">Status:</label>
-            <input type="text" name="status" id="status" value="{{ old('status') }}" required>
+        
             
 
         <div>
@@ -55,13 +53,8 @@
            
         </div>
 
-        <div>
-            <label for="badge_sent">Badge Sent:</label>
-            <input type="checkbox" name="badge_sent" id="badge_sent" {{ old('badge_sent') ? 'checked' : '' }}>
-            
-        </div>
+       
 
         <button type="submit">Create Visit</button>
     </form>
 </div>
-@endsection
