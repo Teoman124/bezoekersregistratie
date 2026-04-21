@@ -28,6 +28,7 @@ class RegistrationController extends Controller
         ]);
 
         $validated['password'] = Hash::make($validated['password']);
+        $validated['role'] = 'visitor'; // Geef de nieuwe gebruiker een standaard rol
 
         event(new Registered(($user = User::create($validated))));
 
