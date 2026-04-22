@@ -76,8 +76,8 @@ class VisitController extends Controller
             ->with('success', 'Visit deleted successfully.');
     }
 
-    
-   public function checkIn(Visit $visit)
+
+    public function checkIn(Visit $visit)
     {
         $visit->update([
             'check_in_time' => now(),
@@ -93,7 +93,7 @@ class VisitController extends Controller
         return back()->with('success', 'Visitor checked in.');
     }
 
-    
+
     public function checkOut(Visit $visit)
     {
         $visit->update([

@@ -27,7 +27,8 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="3" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">Geen bezoekers gevonden.</td>
+                        <td colspan="3" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">Geen bezoekers
+                            gevonden.</td>
                     </tr>
                 @endforelse
             </tbody>

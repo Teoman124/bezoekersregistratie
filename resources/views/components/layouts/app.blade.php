@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ config('app.name') }}</title>
     <script>
-        window.setAppearance = function(appearance) {
+        window.setAppearance = function (appearance) {
             let setDark = () => document.documentElement.classList.add('dark')
             let setLight = () => document.documentElement.classList.remove('dark')
             let setButtons = (appearance) => {
@@ -32,8 +32,8 @@
             }
         }
         window.setAppearance(
-            "{{ auth()->user()->theme_preference ?? '' }}" || 
-            window.localStorage.getItem('appearance') || 
+            "{{ auth()->user()->theme_preference ?? '' }}" ||
+            window.localStorage.getItem('appearance') ||
             'system'
         )
     </script>
@@ -89,7 +89,8 @@
                                     </svg>
                                 </div>
                                 <div class="ml-3">
-                                    <p class="text-sm text-green-700 dark:text-green-200">{{ session('success') ?? session('status') }}</p>
+                                    <p class="text-sm text-green-700 dark:text-green-200">
+                                        {{ session('success') ?? session('status') }}</p>
                                 </div>
                                 <div class="ml-auto pl-3">
                                     <div class="-mx-1.5 -my-1.5">

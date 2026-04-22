@@ -95,4 +95,4 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/Notifications/{notification}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
