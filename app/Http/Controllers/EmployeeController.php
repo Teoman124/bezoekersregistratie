@@ -14,7 +14,7 @@ class EmployeeController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Employee::query();
+        $query = Employee::with(['user', 'department']);
 
         if ($request->filled('name')) {
             $query->whereHas('user', function ($q) use ($request) {

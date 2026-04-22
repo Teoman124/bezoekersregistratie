@@ -11,7 +11,7 @@ class VisitorController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Visitor::query();
+        $query = Visitor::with('user');
 
         if ($request->filled('name')) {
             $query->whereHas('user', function ($q) use ($request) {
@@ -26,7 +26,9 @@ class VisitorController extends Controller
 
     public function create()
     {
-        return view('visitors.create');
+        $users = \App\Models\User::where('role', 'visitor')->get();
+
+        return view('visitors.create', compact('users'));
     }
 
     public function store(StoreVisitorRequest $request)

@@ -70,7 +70,7 @@
             <main class="flex-1 overflow-auto bg-gray-100 dark:bg-gray-900 content-transition">
                 <div class="p-6">
                     <!-- Success Message -->
-                    @session('status')
+                    @if (session('status') || session('success'))
                         <div x-data="{ showStatusMessage: true }" x-show="showStatusMessage"
                             x-transition:enter="transition ease-out duration-300"
                             x-transition:enter-start="opacity-0 transform -translate-y-2"
@@ -89,7 +89,7 @@
                                     </svg>
                                 </div>
                                 <div class="ml-3">
-                                    <p class="text-sm text-green-700 dark:text-green-200">{{ session('status') }}</p>
+                                    <p class="text-sm text-green-700 dark:text-green-200">{{ session('success') ?? session('status') }}</p>
                                 </div>
                                 <div class="ml-auto pl-3">
                                     <div class="-mx-1.5 -my-1.5">
@@ -107,7 +107,7 @@
                                 </div>
                             </div>
                         </div>
-                    @endsession
+                    @endif
 
                     {{ $slot }}
 

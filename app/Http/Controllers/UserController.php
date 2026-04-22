@@ -10,11 +10,18 @@ use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
+    protected function ensureAdmin(): void
+    {
+        abort_unless(auth()->user()?->role === 'admin', 403);
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
+        $this->ensureAdmin();
+
         $query = User::query();
 
         if ($request->filled('role')) {
@@ -35,6 +42,8 @@ class UserController extends Controller
      */
     public function create()
     {
+        $this->ensureAdmin();
+
         return view('users.create');
     }
 
@@ -43,6 +52,8 @@ class UserController extends Controller
      */
     public function store(StoreUserRequest $request)
     {
+        $this->ensureAdmin();
+
         $validatedData = $request->validated();
 
         // ✅ Password hashing
@@ -59,6 +70,8 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
+        $this->ensureAdmin();
+
         $user = User::findOrFail($user->id);
 
         return view('users.show', compact('user'));
@@ -69,6 +82,8 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
+        $this->ensureAdmin();
+
         return view('users.edit', compact('user'));
     }
 
@@ -77,6 +92,8 @@ class UserController extends Controller
      */
     public function update(UpdateUserRequest $request, User $user)
     {
+        $this->ensureAdmin();
+
         $user = User::findOrFail($user->id);
 
         $validatedData = $request->validated();
@@ -99,6 +116,8 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
+        $this->ensureAdmin();
+
         $user->delete();
 
         return redirect()->route('users.index')

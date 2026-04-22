@@ -14,7 +14,7 @@ class VisitController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Visit::query();
+        $query = Visit::with(['visitor.user', 'employee.user']);
 
         if ($request->filled('status')) {
             if ($request->status === 'in') {
