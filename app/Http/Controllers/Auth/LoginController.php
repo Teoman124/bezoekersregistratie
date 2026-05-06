@@ -29,7 +29,7 @@ class LoginController extends Controller
 
         $this->ensureIsNotRateLimited($request);
 
-        if (! Auth::attempt($request->only('email', 'password'), $request->boolean('remember'))) {
+        if (!Auth::attempt($request->only('email', 'password'), $request->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey($request));
 
             throw ValidationException::withMessages([
@@ -62,7 +62,7 @@ class LoginController extends Controller
             ->where('name', $validated['name'])
             ->first();
 
-        if (! $user) {
+        if (!$user) {
             RateLimiter::hit($this->visitorThrottleKey($request));
 
             throw ValidationException::withMessages([
@@ -91,7 +91,7 @@ class LoginController extends Controller
 
     protected function ensureIsNotRateLimited(Request $request): void
     {
-        if (! RateLimiter::tooManyAttempts($this->throttleKey($request), 5)) {
+        if (!RateLimiter::tooManyAttempts($this->throttleKey($request), 5)) {
             return;
         }
 
@@ -109,7 +109,7 @@ class LoginController extends Controller
 
     protected function ensureVisitorIsNotRateLimited(Request $request): void
     {
-        if (! RateLimiter::tooManyAttempts($this->visitorThrottleKey($request), 5)) {
+        if (!RateLimiter::tooManyAttempts($this->visitorThrottleKey($request), 5)) {
             return;
         }
 
@@ -127,11 +127,11 @@ class LoginController extends Controller
 
     public function throttleKey(Request $request): string
     {
-        return Str::transliterate(Str::lower($request->string('email')).'|'.$request->ip());
+        return Str::transliterate(Str::lower($request->string('email')) . '|' . $request->ip());
     }
 
     public function visitorThrottleKey(Request $request): string
     {
-        return Str::transliterate(Str::lower($request->string('name')).'|'.$request->ip());
+        return Str::transliterate(Str::lower($request->string('name')) . '|' . $request->ip());
     }
 }
