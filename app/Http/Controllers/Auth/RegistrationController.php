@@ -9,6 +9,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
 
@@ -32,6 +33,30 @@ class RegistrationController extends Controller
 
         event(new Registered(($user = User::create($validated))));
 
+        Auth::login($user);
+
+        return redirect(route('dashboard', absolute: false));
+    }
+
+    public function createVisitor(): View
+    {
+        return view('auth.visitor-register');
+    }
+
+    public function storeVisitor(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255', 'unique:'.User::class.',name'],
+        ]);
+
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => 'visitor+'.Str::uuid().'@anonymous.local',
+            'password' => Str::random(40),
+            'role' => 'visitor',
+        ]);
+
+        event(new Registered($user));
         Auth::login($user);
 
         return redirect(route('dashboard', absolute: false));

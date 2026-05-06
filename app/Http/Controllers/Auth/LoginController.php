@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -43,6 +44,40 @@ class LoginController extends Controller
         return redirect()->intended(route('dashboard', absolute: false));
     }
 
+    public function createVisitor(): View
+    {
+        return view('auth.visitor-login');
+    }
+
+    public function storeVisitor(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string'],
+        ]);
+
+        $this->ensureVisitorIsNotRateLimited($request);
+
+        $user = User::query()
+            ->where('role', 'visitor')
+            ->where('name', $validated['name'])
+            ->first();
+
+        if (! $user) {
+            RateLimiter::hit($this->visitorThrottleKey($request));
+
+            throw ValidationException::withMessages([
+                'name' => trans('auth.failed'),
+            ]);
+        }
+
+        Auth::login($user, false);
+
+        RateLimiter::clear($this->visitorThrottleKey($request));
+        $request->session()->regenerate();
+
+        return redirect()->intended(route('dashboard', absolute: false));
+    }
+
     public function destroy(Request $request): RedirectResponse
     {
         Auth::guard('web')->logout();
@@ -72,8 +107,31 @@ class LoginController extends Controller
         ]);
     }
 
+    protected function ensureVisitorIsNotRateLimited(Request $request): void
+    {
+        if (! RateLimiter::tooManyAttempts($this->visitorThrottleKey($request), 5)) {
+            return;
+        }
+
+        event(new Lockout($request));
+
+        $seconds = RateLimiter::availableIn($this->visitorThrottleKey($request));
+
+        throw ValidationException::withMessages([
+            'name' => trans('auth.throttle', [
+                'seconds' => $seconds,
+                'minutes' => ceil($seconds / 60),
+            ]),
+        ]);
+    }
+
     public function throttleKey(Request $request): string
     {
         return Str::transliterate(Str::lower($request->string('email')).'|'.$request->ip());
+    }
+
+    public function visitorThrottleKey(Request $request): string
+    {
+        return Str::transliterate(Str::lower($request->string('name')).'|'.$request->ip());
     }
 }

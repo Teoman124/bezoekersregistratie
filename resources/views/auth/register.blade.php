@@ -33,6 +33,15 @@
                 <x-button type="primary" class="w-full">{{ __('Create Account') }}</x-button>
             </form>
 
+            <!-- Visitor Registration Link -->
+            <div class="text-center mt-6">
+                <p class="text-sm text-gray-600 dark:text-gray-400">
+                    {{ __('Want to register as visitor (name only)?') }}
+                    <a href="{{ route('visitor.register') }}"
+                        class="text-blue-600 dark:text-blue-400 hover:underline font-medium">{{ __('Register as Visitor') }}</a>
+                </p>
+            </div>
+
             <!-- Login Link -->
             <div class="text-center mt-6">
                 <p class="text-sm text-gray-600 dark:text-gray-400">

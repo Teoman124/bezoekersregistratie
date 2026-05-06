@@ -32,6 +32,14 @@
                 <x-button type="primary" class="w-full">{{ __('Sign In') }}</x-button>
             </form>
 
+            <div class="text-center mt-6">
+                <p class="text-sm text-gray-600 dark:text-gray-400">
+                    {{ __('Visitor? Sign in with only your name.') }}
+                    <a href="{{ route('visitor.login') }}"
+                        class="text-blue-600 dark:text-blue-400 hover:underline font-medium">{{ __('Visitor sign in') }}</a>
+                </p>
+            </div>
+
             @if (Route::has('register'))
                 <!-- Register Link -->
                 <div class="text-center mt-6">
