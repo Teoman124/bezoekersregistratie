@@ -12,7 +12,7 @@ class UserController extends Controller
 {
     protected function ensureAdmin(): void
     {
-        abort_unless(auth()->user()?->role === 'admin', 403);
+        abort_unless(in_array(auth()->user()?->role, ['admin', 'employee'], true), 403);
     }
 
     /**

@@ -4,7 +4,7 @@
             <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Gebruikers</h1>
             <p class="text-sm text-gray-600 dark:text-gray-400">Overzicht van alle accounts in het systeem.</p>
         </div>
-        @if(auth()->user()?->role === 'admin')
+        @if(in_array(auth()->user()?->role, ['admin', 'employee'], true))
             <a href="{{ route('users.create') }}" class="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white">
                 Nieuwe gebruiker
             </a>
@@ -29,9 +29,10 @@
                         <td class="px-4 py-3 capitalize">{{ $user->role }}</td>
                         <td class="px-4 py-3">
                             <div class="flex gap-3">
-                                <a href="{{ route('users.show', $user) }}" class="text-blue-600 hover:underline">Bekijken</a>
-                                <a href="{{ route('users.edit', $user) }}" class="text-blue-600 hover:underline">Bewerken</a>
-                                <form action="{{ route('users.destroy', $user) }}" method="POST" onsubmit="return confirm('Weet je zeker dat je deze gebruiker wilt verwijderen?');">
+                                <a href="{{ route('users.edit', $user) }}"
+                                    class="text-blue-600 hover:underline">Bewerken</a>
+                                <form action="{{ route('users.destroy', $user) }}" method="POST"
+                                    onsubmit="return confirm('Weet je zeker dat je deze gebruiker wilt verwijderen?');">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="text-red-600 hover:underline">Verwijderen</button>
@@ -41,7 +42,8 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="4" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">Geen gebruikers gevonden.</td>
+                        <td colspan="4" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">Geen gebruikers
+                            gevonden.</td>
                     </tr>
                 @endforelse
             </tbody>
