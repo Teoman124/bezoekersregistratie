@@ -91,6 +91,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Notificaties
     Route::get('/Notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('/Notifications/{notification}', [NotificationController::class, 'show'])->name('notifications.show');
+    Route::get('/Notifications/{notification}/edit', [NotificationController::class, 'edit'])->name('notifications.edit');
+    Route::put('/Notifications/{notification}', [NotificationController::class, 'update'])->name('notifications.update');
     Route::post('/Notifications/{notification}/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
     Route::delete('/Notifications/{notification}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
 });

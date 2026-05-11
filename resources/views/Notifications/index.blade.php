@@ -32,6 +32,8 @@
                         </td>
                         <td class="px-4 py-3">
                             <div class="flex gap-3">
+                                <a href="{{ route('notifications.show', $notification) }}" class="text-blue-600 hover:underline">Bekijken</a>
+                                <a href="{{ route('notifications.edit', $notification) }}" class="text-blue-600 hover:underline">Bewerken</a>
                                 @if(!$notification->read)
                                     <form action="{{ route('notifications.markAsRead', $notification) }}" method="POST">
                                         @csrf

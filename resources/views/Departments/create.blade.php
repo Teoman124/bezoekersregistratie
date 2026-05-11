@@ -11,7 +11,6 @@
                 <label for="name" class="block text-sm font-medium mb-1">Naam</label>
                 <input id="name" name="name" type="text" value="{{ old('name') }}" required
                     class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900" />
-                @error('name') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
             </div>
 
             <div class="flex gap-3">

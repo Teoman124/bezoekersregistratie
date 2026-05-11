@@ -16,6 +16,7 @@
                     <th class="px-4 py-3">Naam</th>
                     <th class="px-4 py-3">E-mail</th>
                     <th class="px-4 py-3">Aangemaakt</th>
+                    <th class="px-4 py-3">Acties</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -24,10 +25,16 @@
                         <td class="px-4 py-3">{{ $visitor->user->name ?? '-' }}</td>
                         <td class="px-4 py-3">{{ $visitor->user->email ?? '-' }}</td>
                         <td class="px-4 py-3">{{ optional($visitor->created_at)->format('d-m-Y H:i') ?? '-' }}</td>
+                        <td class="px-4 py-3">
+                            <div class="flex gap-3">
+                                <a href="{{ route('visitors.show', $visitor) }}" class="text-blue-600 hover:underline">Bekijken</a>
+                                <a href="{{ route('visitors.edit', $visitor) }}" class="text-blue-600 hover:underline">Bewerken</a>
+                            </div>
+                        </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="3" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">Geen bezoekers
+                        <td colspan="4" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">Geen bezoekers
                             gevonden.</td>
                     </tr>
                 @endforelse

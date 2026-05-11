@@ -11,14 +11,12 @@
                 <label for="name" class="block text-sm font-medium mb-1">Naam</label>
                 <input id="name" name="name" type="text" value="{{ old('name') }}" required
                     class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900" />
-                @error('name') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
             </div>
 
             <div>
                 <label for="email" class="block text-sm font-medium mb-1">E-mail</label>
                 <input id="email" name="email" type="email" value="{{ old('email') }}" required
                     class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900" />
-                @error('email') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
             </div>
 
             <div>
@@ -30,14 +28,12 @@
                     <option value="employee" @selected(old('role') === 'employee')>Employee</option>
                     <option value="visitor" @selected(old('role') === 'visitor')>Visitor</option>
                 </select>
-                @error('role') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
             </div>
 
             <div>
                 <label for="password" class="block text-sm font-medium mb-1">Wachtwoord</label>
                 <input id="password" name="password" type="password" required
                     class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900" />
-                @error('password') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
             </div>
 
             <div>

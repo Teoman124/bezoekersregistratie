@@ -29,6 +29,7 @@
                         <td class="px-4 py-3 capitalize">{{ $user->role }}</td>
                         <td class="px-4 py-3">
                             <div class="flex gap-3">
+                                <a href="{{ route('users.show', $user) }}" class="text-blue-600 hover:underline">Bekijken</a>
                                 <a href="{{ route('users.edit', $user) }}" class="text-blue-600 hover:underline">Bewerken</a>
                                 <form action="{{ route('users.destroy', $user) }}" method="POST" onsubmit="return confirm('Weet je zeker dat je deze gebruiker wilt verwijderen?');">
                                     @csrf

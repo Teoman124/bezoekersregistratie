@@ -17,7 +17,6 @@
                             ({{ $user->email }})</option>
                     @endforeach
                 </select>
-                @error('user_id') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
             </div>
 
             <div>
@@ -30,14 +29,12 @@
                             {{ $department->name }}</option>
                     @endforeach
                 </select>
-                @error('department_id') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
             </div>
 
             <div>
                 <label for="function" class="block text-sm font-medium mb-1">Functie</label>
                 <input id="function" name="function" type="text" value="{{ old('function') }}"
                     class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900" />
-                @error('function') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
             </div>
 
             <div class="flex gap-3">

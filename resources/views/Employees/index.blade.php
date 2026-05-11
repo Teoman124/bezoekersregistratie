@@ -17,6 +17,7 @@
                     <th class="px-4 py-3">E-mail</th>
                     <th class="px-4 py-3">Afdeling</th>
                     <th class="px-4 py-3">Functie</th>
+                    <th class="px-4 py-3">Acties</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -26,10 +27,16 @@
                         <td class="px-4 py-3">{{ $employee->user->email ?? '-' }}</td>
                         <td class="px-4 py-3">{{ $employee->department->name ?? '-' }}</td>
                         <td class="px-4 py-3">{{ $employee->function ?? '-' }}</td>
+                        <td class="px-4 py-3">
+                            <div class="flex gap-3">
+                                <a href="{{ route('employees.show', $employee) }}" class="text-blue-600 hover:underline">Bekijken</a>
+                                <a href="{{ route('employees.edit', $employee) }}" class="text-blue-600 hover:underline">Bewerken</a>
+                            </div>
+                        </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="4" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">Geen medewerkers
+                        <td colspan="5" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">Geen medewerkers
                             gevonden.</td>
                     </tr>
                 @endforelse

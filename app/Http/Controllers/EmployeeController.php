@@ -51,8 +51,9 @@ class EmployeeController extends Controller
     public function edit(Employee $employee)
     {
         $departments = Department::all();
+        $users = User::where('role', 'employee')->get();
 
-        return view('employees.edit', compact('employee', 'departments'));
+        return view('employees.edit', compact('employee', 'departments', 'users'));
     }
 
     public function update(UpdateEmployeeRequest $request, Employee $employee)

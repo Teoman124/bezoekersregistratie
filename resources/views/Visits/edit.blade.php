@@ -18,7 +18,6 @@
                         </option>
                     @endforeach
                 </select>
-                @error('visitor_id') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
             </div>
 
             <div>
@@ -31,14 +30,12 @@
                         </option>
                     @endforeach
                 </select>
-                @error('host_employee_id') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
             </div>
 
             <div>
                 <label for="reason_of_visit" class="block text-sm font-medium mb-1">Reden van bezoek</label>
                 <textarea name="reason_of_visit" id="reason_of_visit" rows="4"
                     class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900">{{ old('reason_of_visit', $visit->reason_of_visit) }}</textarea>
-                @error('reason_of_visit') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -47,7 +44,6 @@
                     <input type="datetime-local" name="expected_arrival_time" id="expected_arrival_time"
                         value="{{ old('expected_arrival_time', optional($visit->expected_arrival_time)->format('Y-m-d\TH:i')) }}"
                         class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900" />
-                    @error('expected_arrival_time') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
 
                 <div>
@@ -55,7 +51,6 @@
                     <input type="datetime-local" name="expected_departure_time" id="expected_departure_time"
                         value="{{ old('expected_departure_time', optional($visit->expected_departure_time)->format('Y-m-d\TH:i')) }}"
                         class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900" />
-                    @error('expected_departure_time') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
             </div>
 
@@ -65,7 +60,6 @@
                     <input type="datetime-local" name="check_in_time" id="check_in_time"
                         value="{{ old('check_in_time', optional($visit->check_in_time)->format('Y-m-d\TH:i')) }}"
                         class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900" />
-                    @error('check_in_time') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
 
                 <div>
@@ -73,7 +67,6 @@
                     <input type="datetime-local" name="check_out_time" id="check_out_time"
                         value="{{ old('check_out_time', optional($visit->check_out_time)->format('Y-m-d\TH:i')) }}"
                         class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900" />
-                    @error('check_out_time') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
             </div>
 

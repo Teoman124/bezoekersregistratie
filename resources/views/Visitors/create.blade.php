@@ -18,7 +18,6 @@
                             ({{ $user->email }})</option>
                     @endforeach
                 </select>
-                @error('user_id') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
             </div>
 
             <div class="flex gap-3">

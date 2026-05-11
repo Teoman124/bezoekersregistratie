@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreVisitorRequest;
 use App\Http\Requests\UpdateVisitorRequest;
 use App\Models\Visitor;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class VisitorController extends Controller
@@ -46,7 +47,9 @@ class VisitorController extends Controller
 
     public function edit(Visitor $visitor)
     {
-        return view('visitors.edit', compact('visitor'));
+        $users = User::where('role', 'visitor')->get();
+
+        return view('visitors.edit', compact('visitor', 'users'));
     }
 
     public function update(UpdateVisitorRequest $request, Visitor $visitor)
