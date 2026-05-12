@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreEmployeeRequest;
 use App\Http\Requests\UpdateEmployeeRequest;
-use App\Models\Employee;
 use App\Models\Department;
+use App\Models\Employee;
 use App\Models\User;
 use Illuminate\Http\Request;
-use App\Http\Requests\StoreEmployeeRequest;
-
 
 class EmployeeController extends Controller
 {
@@ -18,7 +17,7 @@ class EmployeeController extends Controller
 
         if ($request->filled('name')) {
             $query->whereHas('user', function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->name . '%');
+                $q->where('name', 'like', '%'.$request->name.'%');
             });
         }
 
@@ -66,6 +65,12 @@ class EmployeeController extends Controller
 
     public function destroy(Employee $employee)
     {
+
+        // Zet de rol van de gekoppelde gebruiker terug naar 'visitor'
+        if ($employee->user) {
+            $employee->user->update(['role' => 'visitor']);
+        }
+
         $employee->delete();
 
         return redirect()->route('employees.index')

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
+use App\Models\Employee;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -29,7 +30,7 @@ class UserController extends Controller
         }
 
         if ($request->filled('name')) {
-            $query->where('name', 'like', '%' . $request->name . '%');
+            $query->where('name', 'like', '%'.$request->name.'%');
         }
 
         $users = $query->get();
@@ -99,13 +100,29 @@ class UserController extends Controller
         $validatedData = $request->validated();
 
         // ✅ Alleen hashen als password is ingevuld
-        if (!empty($validatedData['password'])) {
+        if (! empty($validatedData['password'])) {
             $validatedData['password'] = Hash::make($validatedData['password']);
         } else {
             unset($validatedData['password']);
         }
 
+        $oldRole = $user->role;
         $user->update($validatedData);
+
+        $newRole = $validatedData['role'] ?? $user->role;
+
+        // Als de rol nu 'employee' is, maak Employee-record aan als die nog niet bestaat
+        if ($newRole === 'employee') {
+            if (! Employee::where('user_id', $user->id)->exists()) {
+                Employee::create([
+                    'user_id' => $user->id,
+                    // afdeling en functie worden later handmatig toegevoegd
+                ]);
+            }
+        } else {
+            // Als de rol niet meer 'employee' is, verwijder Employee-record indien aanwezig
+            Employee::where('user_id', $user->id)->delete();
+        }
 
         return redirect()->route('users.index')
             ->with('success', 'User updated successfully.');
