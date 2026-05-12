@@ -1,18 +1,18 @@
 <?php
 
-use App\Http\Controllers\Settings;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\VisitController;
-use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\DepartmentController;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\VisitorController;
+use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\Settings;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\VisitController;
+use App\Http\Controllers\VisitorController;
 use App\Models\Department;
 use App\Models\Employee;
 use App\Models\User;
 use App\Models\Visit;
 use App\Models\Visitor;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
@@ -25,6 +25,7 @@ Route::get('dashboard', function () {
             'employees' => Employee::count(),
             'visitors' => Visitor::count(),
             'visits' => Visit::count(),
+            'active_visits' => Visit::active()->count(),
             'departments' => Department::count(),
         ],
     ]);
@@ -40,10 +41,10 @@ Route::middleware(['auth'])->group(function () {
     Route::put('settings/appearance', [Settings\AppearanceController::class, 'update'])->name('settings.appearance.update');
 });
 
-
 Route::middleware(['auth', 'verified'])->group(function () {
     // Bezoeken
     Route::get('/Visits', [VisitController::class, 'index'])->name('visits.index');
+    Route::get('/Visits/active', [VisitController::class, 'active'])->name('visits.active');
     Route::get('/Visits/create', [VisitController::class, 'create'])->name('visits.create');
     Route::post('/Visits', [VisitController::class, 'store'])->name('visits.store');
     Route::get('/Visits/{visit}', [VisitController::class, 'show'])->name('visits.show');
@@ -98,4 +99,4 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/Notifications/{notification}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
 });
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';

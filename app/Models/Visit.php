@@ -32,4 +32,23 @@ class Visit extends Model
     {
         return $this->belongsTo(Employee::class, 'host_employee_id');
     }
+
+    public function currentStatus(): string
+    {
+        if ($this->check_in_time === null) {
+            return 'planned';
+        }
+
+        if ($this->check_out_time === null) {
+            return 'active';
+        }
+
+        return 'checked_out';
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->whereNotNull('check_in_time')
+            ->whereNull('check_out_time');
+    }
 }

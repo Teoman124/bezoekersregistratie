@@ -27,8 +27,10 @@
                         <td class="px-4 py-3">{{ optional($visitor->created_at)->format('d-m-Y H:i') ?? '-' }}</td>
                         <td class="px-4 py-3">
                             <div class="flex gap-3">
-                                <a href="{{ route('visitors.show', $visitor) }}" class="text-blue-600 hover:underline">Bekijken</a>
-                                <a href="{{ route('visitors.edit', $visitor) }}" class="text-blue-600 hover:underline">Bewerken</a>
+                                <a href="{{ route('visitors.show', $visitor) }}"
+                                    class="text-blue-600 hover:underline">Bekijken</a>
+                                <a href="{{ route('visitors.edit', $visitor) }}"
+                                    class="text-blue-600 hover:underline">Bewerken</a>
                             </div>
                         </td>
                     </tr>
