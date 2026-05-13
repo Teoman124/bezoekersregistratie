@@ -76,4 +76,31 @@
         </div>
     @endif
 
-</x-layouts.app>
+    @if(auth()->check() && auth()->user()->role === 'visitor')
+        @php $visitor = auth()->user()->visitor; @endphp
+        @if((!$visitor || empty($visitor->company_name)) && !session('visitor_company_prompt_skipped'))
+            <div x-data="{ open: true }" x-show="open" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+                <div class="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">
+                    <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-3">{{ __('Van welk bedrijf kom je?') }}</h2>
+
+                    <form method="POST" action="{{ route('visitor.company-info.store') }}" class="space-y-4">
+                        @csrf
+                        <div>
+                            <x-forms.input name="company_name" label="{{ __('Bedrijf') }}" type="text" placeholder="{{ __('Bedrijfsnaam') }}" autofocus />
+                        </div>
+
+                        <x-button type="primary" class="w-full">{{ __('Opslaan') }}</x-button>
+                    </form>
+
+                    <form method="POST" action="{{ route('visitor.company-info.skip') }}" class="mt-3">
+                        @csrf
+                        <button type="submit" class="w-full inline-flex items-center justify-center px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition">
+                            {{ __('Overslaan') }}
+                        </button>
+                    </form>
+                </div>
+            </div>
+        @endif
+    @endif
+
+    </x-layouts.app>

@@ -8,6 +8,7 @@ class Visitor extends Model
 {
     protected $fillable = [
         'user_id',
+        'company_name',
     ];
 
     public function user()

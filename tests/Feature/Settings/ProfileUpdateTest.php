@@ -39,6 +39,33 @@ class ProfileUpdateTest extends TestCase
         $this->assertNull($user->email_verified_at);
     }
 
+    public function test_visitor_company_information_can_be_updated_from_profile(): void
+    {
+        $user = User::factory()->create([
+            'role' => 'visitor',
+        ]);
+
+        $user->visitor()->create([
+            'company_name' => 'Old Company',
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->put('/settings/profile', [
+                'name' => 'Test Visitor',
+                'email' => $user->email,
+                'company_name' => 'New Company',
+            ]);
+
+        $response
+            ->assertSessionHasNoErrors()
+            ->assertRedirect('/settings/profile');
+
+        $user->refresh();
+
+        $this->assertSame('New Company', $user->visitor->company_name);
+    }
+
     public function test_email_verification_status_is_unchanged_when_email_address_is_unchanged(): void
     {
         $user = User::factory()->create();

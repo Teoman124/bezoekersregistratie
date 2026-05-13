@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreVisitorRequest;
 use App\Http\Requests\UpdateVisitorRequest;
-use App\Models\Visitor;
 use App\Models\User;
+use App\Models\Visitor;
 use Illuminate\Http\Request;
 
 class VisitorController extends Controller
@@ -16,7 +16,7 @@ class VisitorController extends Controller
 
         if ($request->filled('name')) {
             $query->whereHas('user', function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->name . '%');
+                $q->where('name', 'like', '%'.$request->name.'%');
             });
         }
 
@@ -27,7 +27,7 @@ class VisitorController extends Controller
 
     public function create()
     {
-        $users = \App\Models\User::where('role', 'visitor')->get();
+        $users = User::where('role', 'visitor')->get();
 
         return view('visitors.create', compact('users'));
     }

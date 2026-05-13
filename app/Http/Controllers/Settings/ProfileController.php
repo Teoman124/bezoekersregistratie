@@ -33,9 +33,19 @@ class ProfileController extends Controller
                 'max:255',
                 Rule::unique(User::class)->ignore($user->id),
             ],
+            'company_name' => ['nullable', 'string', 'max:255'],
         ]);
 
-        $user->fill($validated);
+        $user->fill([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+        ]);
+
+        if ($user->role === 'visitor') {
+            $user->visitor()->updateOrCreate([], [
+                'company_name' => $validated['company_name'] ?? null,
+            ]);
+        }
 
         if ($user->isDirty('email')) {
             $user->email_verified_at = null;

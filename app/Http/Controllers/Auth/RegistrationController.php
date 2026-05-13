@@ -59,6 +59,32 @@ class RegistrationController extends Controller
         event(new Registered($user));
         Auth::login($user);
 
+        return redirect(route('visitor.company-info', absolute: false));
+    }
+
+    public function createCompanyInfo(): View
+    {
+        return view('auth.visitor-company-info');
+    }
+
+    public function storeCompanyInfo(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'company_name' => ['required', 'string', 'max:255'],
+        ]);
+
+        $user = $request->user();
+        $user->visitor()->updateOrCreate([], $validated);
+
+        $request->session()->forget('visitor_company_prompt_skipped');
+
+        return redirect(route('dashboard', absolute: false))->with('success', 'Bedrijfinformatie opgeslagen!');
+    }
+
+    public function skipCompanyInfo(Request $request): RedirectResponse
+    {
+        $request->session()->put('visitor_company_prompt_skipped', true);
+
         return redirect(route('dashboard', absolute: false));
     }
 }

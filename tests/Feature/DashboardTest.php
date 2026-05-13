@@ -21,4 +21,49 @@ class DashboardTest extends TestCase
 
         $this->get('/dashboard')->assertStatus(200);
     }
+
+    public function test_visitors_without_company_name_see_the_company_prompt(): void
+    {
+        $user = User::factory()->create([
+            'role' => 'visitor',
+        ]);
+
+        $user->visitor()->create();
+
+        $this->actingAs($user)
+            ->get('/dashboard')
+            ->assertOk()
+            ->assertSee('Van welk bedrijf kom je?');
+    }
+
+    public function test_visitors_with_company_name_do_not_see_the_company_prompt(): void
+    {
+        $user = User::factory()->create([
+            'role' => 'visitor',
+        ]);
+
+        $user->visitor()->create([
+            'company_name' => 'ACME B.V.',
+        ]);
+
+        $this->actingAs($user)
+            ->get('/dashboard')
+            ->assertOk()
+            ->assertDontSee('Van welk bedrijf kom je?');
+    }
+
+    public function test_visitors_can_skip_the_company_prompt_for_the_current_session(): void
+    {
+        $user = User::factory()->create([
+            'role' => 'visitor',
+        ]);
+
+        $user->visitor()->create();
+
+        $this->actingAs($user)
+            ->post(route('visitor.company-info.skip'))
+            ->assertRedirect(route('dashboard', absolute: false));
+
+        $this->get('/dashboard')->assertOk()->assertDontSee('Van welk bedrijf kom je?');
+    }
 }

@@ -27,6 +27,12 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
+    Route::get('visitor/company-info', [RegistrationController::class, 'createCompanyInfo'])->name('visitor.company-info');
+    Route::post('visitor/company-info', [RegistrationController::class, 'storeCompanyInfo'])->name('visitor.company-info.store');
+    Route::post('visitor/company-info/skip', [RegistrationController::class, 'skipCompanyInfo'])->name('visitor.company-info.skip');
+});
+
+Route::middleware('auth')->group(function () {
     Route::get('verify-email', [VerificationController::class, 'notice'])->name('verification.notice');
     Route::post('verify-email', [VerificationController::class, 'store'])->middleware('throttle:6,1')->name('verification.store');
     Route::get('verify-email/{id}/{hash}', [VerificationController::class, 'verify'])->middleware(['signed', 'throttle:6,1'])->name('verification.verify');
@@ -36,4 +42,3 @@ Route::middleware('auth')->group(function () {
 
     Route::post('logout', [LoginController::class, 'destroy'])->name('logout');
 });
-
