@@ -6,8 +6,8 @@ use App\Models\Department;
 use App\Models\Employee;
 use App\Models\Notification;
 use App\Models\User;
-use App\Models\Visitor;
 use App\Models\Visit;
+use App\Models\Visitor;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder

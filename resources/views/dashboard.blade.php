@@ -12,7 +12,7 @@
     </div>
 
     @if(in_array(auth()->user()?->role, ['admin', 'employee'], true))
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-6">
             <a href="{{ route('users.index') }}"
                 class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700 hover:shadow-md transition">
                 <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('Gebruikers') }}</p>
@@ -39,6 +39,13 @@
                 <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('Bezoeken') }}</p>
                 <p class="text-2xl font-bold text-gray-800 dark:text-gray-100 mt-1">{{ $stats['visits'] }}</p>
                 <p class="text-xs text-blue-600 dark:text-blue-400 mt-2">{{ __('Open bezoeken') }}</p>
+            </a>
+
+            <a href="{{ route('visits.active') }}"
+                class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700 hover:shadow-md transition">
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('Aanwezig') }}</p>
+                <p class="text-2xl font-bold text-gray-800 dark:text-gray-100 mt-1">{{ $stats['active_visits'] }}</p>
+                <p class="text-xs text-blue-600 dark:text-blue-400 mt-2">{{ __('Actieve bezoekerslijst') }}</p>
             </a>
         </div>
 

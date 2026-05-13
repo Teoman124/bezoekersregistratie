@@ -25,6 +25,7 @@ class UpdateVisitRequest extends FormRequest
         return [
             'visitor_id' => 'sometimes|exists:visitors,id',
             'host_employee_id' => 'sometimes|exists:employees,id',
+            'status' => 'required|in:planned,active,checked_out',
             'reason_of_visit' => 'nullable|string|max:1000',
             'expected_arrival_time' => 'sometimes|date',
             'expected_departure_time' => 'nullable|date|after_or_equal:expected_arrival_time',

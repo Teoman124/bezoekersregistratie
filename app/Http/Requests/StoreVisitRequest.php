@@ -25,6 +25,7 @@ class StoreVisitRequest extends FormRequest
         return [
             'visitor_id' => 'required|exists:visitors,id',
             'host_employee_id' => 'required|exists:employees,id',
+            'status' => 'nullable|in:planned,active,checked_out',
             'reason_of_visit' => 'nullable|string|max:1000',
             'expected_arrival_time' => 'required|date',
             'expected_departure_time' => 'nullable|date|after_or_equal:expected_arrival_time',

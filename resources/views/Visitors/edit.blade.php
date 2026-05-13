@@ -22,8 +22,10 @@
             </div>
 
             <div class="flex gap-3">
-                <button type="submit" class="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white">Opslaan</button>
-                <a href="{{ route('visitors.index') }}" class="px-4 py-2 rounded-md border border-gray-300 dark:border-gray-700">Annuleren</a>
+                <button type="submit"
+                    class="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white">Opslaan</button>
+                <a href="{{ route('visitors.index') }}"
+                    class="px-4 py-2 rounded-md border border-gray-300 dark:border-gray-700">Annuleren</a>
             </div>
         </form>
     </div>

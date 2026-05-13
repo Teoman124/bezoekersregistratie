@@ -4,10 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreVisitRequest;
 use App\Http\Requests\UpdateVisitRequest;
-use App\Models\Visit;
 use App\Models\Employee;
-use App\Models\Visitor;
 use App\Models\Notification;
+use App\Models\Visit;
+use App\Models\Visitor;
 use Illuminate\Http\Request;
 
 class VisitController extends Controller
@@ -18,7 +18,7 @@ class VisitController extends Controller
 
         if ($request->filled('status')) {
             if ($request->status === 'in') {
-                $query->whereNull('check_out_time');
+                $query->active();
             }
 
             if ($request->status === 'out') {
@@ -31,6 +31,16 @@ class VisitController extends Controller
         return view('visits.index', compact('visits'));
     }
 
+    public function active()
+    {
+        $visits = Visit::active()
+            ->with(['visitor.user', 'employee.user'])
+            ->latest('check_in_time')
+            ->get();
+
+        return view('visits.active', compact('visits'));
+    }
+
     public function create()
     {
         $employees = Employee::with('department')->get();
@@ -41,7 +51,27 @@ class VisitController extends Controller
 
     public function store(StoreVisitRequest $request)
     {
-        Visit::create($request->validated());
+        $validated = $request->validated();
+        $status = $validated['status'] ?? 'planned';
+
+        unset($validated['status']);
+
+        if ($status === 'planned') {
+            $validated['check_in_time'] = null;
+            $validated['check_out_time'] = null;
+        }
+
+        if ($status === 'active') {
+            $validated['check_in_time'] = now();
+            $validated['check_out_time'] = null;
+        }
+
+        if ($status === 'checked_out') {
+            $validated['check_in_time'] = now();
+            $validated['check_out_time'] = now();
+        }
+
+        Visit::create($validated);
 
         return redirect()->route('visits.index')
             ->with('success', 'Visit created successfully.');
@@ -62,7 +92,33 @@ class VisitController extends Controller
 
     public function update(UpdateVisitRequest $request, Visit $visit)
     {
-        $visit->update($request->validated());
+        $validated = $request->validated();
+        $status = $validated['status'];
+
+        unset($validated['status']);
+
+        $visit->update($validated);
+
+        if ($status === 'planned') {
+            $visit->update([
+                'check_in_time' => null,
+                'check_out_time' => null,
+            ]);
+        }
+
+        if ($status === 'active') {
+            $visit->update([
+                'check_in_time' => $visit->check_in_time ?? now(),
+                'check_out_time' => null,
+            ]);
+        }
+
+        if ($status === 'checked_out') {
+            $visit->update([
+                'check_in_time' => $visit->check_in_time ?? now(),
+                'check_out_time' => $visit->check_out_time ?? now(),
+            ]);
+        }
 
         return redirect()->route('visits.index')
             ->with('success', 'Visit updated successfully.');
@@ -85,6 +141,7 @@ class VisitController extends Controller
 
         $visit->update([
             'check_in_time' => now(),
+            'check_out_time' => null,
         ]);
 
         if ($visit->employee && $visit->visitor && $visit->visitor->user) {

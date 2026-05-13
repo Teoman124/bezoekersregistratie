@@ -23,7 +23,7 @@ class UpdateVisitorRequest extends FormRequest
     public function rules(): array
     {
         return [
-           'user_id' => 'sometimes|exists:users,id',
+            'user_id' => 'sometimes|exists:users,id',
         ];
     }
 }
