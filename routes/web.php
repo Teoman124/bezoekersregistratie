@@ -15,8 +15,17 @@ use App\Models\Visitor;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
-})->name('home');
+    return view('dashboard', [
+        'stats' => [
+            'users' => User::count(),
+            'employees' => Employee::count(),
+            'visitors' => Visitor::count(),
+            'visits' => Visit::count(),
+            'active_visits' => Visit::active()->count(),
+            'departments' => Department::count(),
+        ],
+    ]);
+})->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::get('dashboard', function () {
     return view('dashboard', [
@@ -51,7 +60,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/Visits/{visit}/edit', [VisitController::class, 'edit'])->name('visits.edit');
     Route::put('/Visits/{visit}', [VisitController::class, 'update'])->name('visits.update');
     Route::delete('/Visits/{visit}', [VisitController::class, 'destroy'])->name('visits.destroy');
-    Route::get('/Visits/checkin/{visit}', [VisitController::class, 'checkIn'])->name('visits.checkin');
+    Route::match(['get', 'post'], '/Visits/checkin/{visit}', [VisitController::class, 'checkIn'])->name('visits.checkin');
     Route::get('/Visits/checkout/{visit}', [VisitController::class, 'checkOut'])->name('visits.checkout');
 
     // Medewerkers

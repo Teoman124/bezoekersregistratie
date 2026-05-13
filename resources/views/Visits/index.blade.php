@@ -31,48 +31,53 @@
                 </thead>
                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                     @forelse($visits as $visit)
-                        <tr>
-                            <td class="px-4 py-3">{{ $visit->visitor?->user?->name ?? 'Onbekend' }}</td>
-                            <td class="px-4 py-3">
-                                {{ $visit->employee?->user?->name ?? 'Onbekend' }}
-                                @if($visit->employee?->department)
-                                    <div class="text-xs text-gray-500 dark:text-gray-400">{{ $visit->employee->department->name }}</div>
+                    <tr>
+                        <td class="px-4 py-3">{{ $visit->visitor?->user?->name ?? 'Onbekend' }}</td>
+                        <td class="px-4 py-3">
+                            {{ $visit->employee?->user?->name ?? 'Onbekend' }}
+                            @if($visit->employee?->department)
+                            <div class="text-xs text-gray-500 dark:text-gray-400">{{ $visit->employee->department->name }}</div>
+                            @endif
+                        </td>
+                        <td class="px-4 py-3">{{ $visit->reason_of_visit ?: 'Geen reden ingevuld' }}</td>
+                        <td class="px-4 py-3">{{ $visit->expected_arrival_time?->format('d-m-Y H:i') ?? '-' }}</td>
+                        <td class="px-4 py-3">{{ $visit->expected_departure_time?->format('d-m-Y H:i') ?? '-' }}</td>
+                        <td class="px-4 py-3">
+                            @if($visit->check_out_time)
+                            <span class="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200">Uitgecheckt</span>
+                            @elseif($visit->check_in_time)
+                            <span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300">Actief</span>
+                            @else
+                            <span class="px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300">Ingepland</span>
+                            @endif
+                        </td>
+                        <td class="px-4 py-3">
+                            <div class="flex flex-wrap gap-2">
+                                @if(!$visit->check_in_time)
+                                <form action="{{ route('visits.checkin', $visit) }}" method="POST" class="inline">
+                                    @csrf
+                                    <button type="submit" class="px-3 py-1 rounded-full bg-green-600 text-white text-xs hover:bg-green-700">Inchecken</button>
+                                </form>
                                 @endif
-                            </td>
-                            <td class="px-4 py-3">{{ $visit->reason_of_visit ?: 'Geen reden ingevuld' }}</td>
-                            <td class="px-4 py-3">{{ $visit->expected_arrival_time?->format('d-m-Y H:i') ?? '-' }}</td>
-                            <td class="px-4 py-3">{{ $visit->expected_departure_time?->format('d-m-Y H:i') ?? '-' }}</td>
-                            <td class="px-4 py-3">
-                                @if($visit->check_out_time)
-                                    <span class="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200">Uitgecheckt</span>
-                                @elseif($visit->check_in_time)
-                                    <span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300">Actief</span>
-                                @else
-                                    <span class="px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300">Ingepland</span>
+
+                                @if($visit->check_in_time && !$visit->check_out_time)
+                                <a href="{{ route('visits.checkout', $visit) }}" class="px-3 py-1 rounded-full bg-amber-600 text-white text-xs hover:bg-amber-700">Uitchecken</a>
                                 @endif
-                            </td>
-                            <td class="px-4 py-3">
-                                <div class="flex flex-wrap gap-3">
-                                    <a href="{{ route('visits.show', $visit) }}" class="text-blue-600 hover:underline">Bekijken</a>
-                                    <a href="{{ route('visits.edit', $visit) }}" class="text-blue-600 hover:underline">Bewerken</a>
-                                    @if(!$visit->check_in_time)
-                                        <a href="{{ route('visits.checkin', $visit) }}" class="text-green-600 hover:underline">Inchecken</a>
-                                    @endif
-                                    @if($visit->check_in_time && !$visit->check_out_time)
-                                        <a href="{{ route('visits.checkout', $visit) }}" class="text-amber-600 hover:underline">Uitchecken</a>
-                                    @endif
-                                    <form action="{{ route('visits.destroy', $visit) }}" method="POST" onsubmit="return confirm('Weet je zeker dat je dit bezoek wilt verwijderen?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="text-red-600 hover:underline">Verwijderen</button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
+
+                                <a href="{{ route('visits.show', $visit) }}" class="px-3 py-1 rounded-full bg-blue-600 text-white text-xs hover:bg-blue-700">Bekijken</a>
+                                <a href="{{ route('visits.edit', $visit) }}" class="px-3 py-1 rounded-full bg-slate-600 text-white text-xs hover:bg-slate-700">Bewerken</a>
+                                <form action="{{ route('visits.destroy', $visit) }}" method="POST" onsubmit="return confirm('Weet je zeker dat je dit bezoek wilt verwijderen?');" class="inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="px-3 py-1 rounded-full bg-red-600 text-white text-xs hover:bg-red-700">Verwijderen</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
                     @empty
-                        <tr>
-                            <td colspan="7" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">Geen bezoeken gevonden.</td>
-                        </tr>
+                    <tr>
+                        <td colspan="7" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">Geen bezoeken gevonden.</td>
+                    </tr>
                     @endforelse
                 </tbody>
             </table>
