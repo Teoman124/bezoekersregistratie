@@ -134,23 +134,39 @@ class VisitController extends Controller
 
     public function checkIn(Visit $visit)
     {
+        // voorkom dubbel inchecken
+        if ($visit->check_in_time) {
+            return back()->with('error', 'Visitor is already checked in.');
+        }
+
         $visit->update([
             'check_in_time' => now(),
             'check_out_time' => null,
         ]);
 
-        //  notificatie word naar employee gestuurd (host)
-        Notification::create([
-            'user_id' => $visit->employee->user_id,
-            'title' => 'Bezoeker ingecheckt',
-            'message' => 'Je bezoeker ' . $visit->visitor->user->name . ' is aangekomen.',
-        ]);
+        if ($visit->employee && $visit->visitor && $visit->visitor->user) {
+            Notification::create([
+                'user_id' => $visit->employee->user_id,
+                'title' => 'Bezoeker ingecheckt',
+                'message' => 'Je bezoeker ' . $visit->visitor->user->name . ' is aangekomen.',
+            ]);
+        }
 
         return back()->with('success', 'Visitor checked in.');
     }
 
     public function checkOut(Visit $visit)
     {
+        // eerst ingecheckt?
+        if (!$visit->check_in_time) {
+            return back()->with('error', 'Visitor has not checked in yet.');
+        }
+
+        // voorkom dubbel uitchecken
+        if ($visit->check_out_time) {
+            return back()->with('error', 'Visitor is already checked out.');
+        }
+
         $visit->update([
             'check_out_time' => now(),
         ]);

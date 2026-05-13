@@ -60,7 +60,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/Visits/{visit}/edit', [VisitController::class, 'edit'])->name('visits.edit');
     Route::put('/Visits/{visit}', [VisitController::class, 'update'])->name('visits.update');
     Route::delete('/Visits/{visit}', [VisitController::class, 'destroy'])->name('visits.destroy');
-    Route::get('/Visits/checkin/{visit}', [VisitController::class, 'checkIn'])->name('visits.checkin');
+    Route::match(['get', 'post'], '/Visits/checkin/{visit}', [VisitController::class, 'checkIn'])->name('visits.checkin');
     Route::get('/Visits/checkout/{visit}', [VisitController::class, 'checkOut'])->name('visits.checkout');
 
     // Medewerkers
