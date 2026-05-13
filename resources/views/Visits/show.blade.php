@@ -44,10 +44,13 @@
         <div class="flex gap-3">
             <a href="{{ route('visits.index') }}" class="px-4 py-2 rounded-md border border-gray-300 dark:border-gray-700">Terug</a>
             @if(!$visit->check_in_time)
-                <a href="{{ route('visits.checkin', $visit) }}" class="px-4 py-2 rounded-md bg-green-600 hover:bg-green-700 text-white">Inchecken</a>
+            <form action="{{ route('visits.checkin', $visit) }}" method="POST">
+                @csrf
+                <button type="submit" class="px-4 py-2 rounded-md bg-green-600 hover:bg-green-700 text-white">Inchecken</button>
+            </form>
             @endif
             @if($visit->check_in_time && !$visit->check_out_time)
-                <a href="{{ route('visits.checkout', $visit) }}" class="px-4 py-2 rounded-md bg-amber-600 hover:bg-amber-700 text-white">Uitchecken</a>
+            <a href="{{ route('visits.checkout', $visit) }}" class="px-4 py-2 rounded-md bg-amber-600 hover:bg-amber-700 text-white">Uitchecken</a>
             @endif
         </div>
     </div>
