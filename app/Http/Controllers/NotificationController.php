@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\UpdateNotificationRequest;
-use App\Models\User;
 use App\Models\Notification;
+use App\Models\User;
 
 class NotificationController extends Controller
 {

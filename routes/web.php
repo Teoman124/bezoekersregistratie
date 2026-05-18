@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\NotificationController as ApiNotificationController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\NotificationController;
@@ -15,6 +16,13 @@ use App\Models\Visitor;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
+    $today = now()->startOfDay();
+    $yesterday = now()->subDay()->startOfDay();
+    $startOfWeek = now()->startOfWeek();
+    $visitsToday = Visit::whereDate('expected_arrival_time', $today)->count();
+    $visitsYesterday = Visit::whereDate('expected_arrival_time', $yesterday)->count();
+    $visitsThisWeek = Visit::whereBetween('expected_arrival_time', [$startOfWeek, $today->copy()->endOfDay()])->count();
+    $plannedVisits = Visit::whereNull('check_in_time')->whereDate('expected_arrival_time', '>=', $today)->count();
     return view('dashboard', [
         'stats' => [
             'users' => User::count(),
@@ -23,11 +31,22 @@ Route::get('/', function () {
             'visits' => Visit::count(),
             'active_visits' => Visit::active()->count(),
             'departments' => Department::count(),
+            'visits_today' => $visitsToday,
+            'visits_yesterday' => $visitsYesterday,
+            'visits_this_week' => $visitsThisWeek,
+            'planned_visits' => $plannedVisits,
         ],
     ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::get('dashboard', function () {
+    $today = now()->startOfDay();
+    $yesterday = now()->subDay()->startOfDay();
+    $startOfWeek = now()->startOfWeek();
+    $visitsToday = Visit::whereDate('expected_arrival_time', $today)->count();
+    $visitsYesterday = Visit::whereDate('expected_arrival_time', $yesterday)->count();
+    $visitsThisWeek = Visit::whereBetween('expected_arrival_time', [$startOfWeek, $today->copy()->endOfDay()])->count();
+    $plannedVisits = Visit::whereNull('check_in_time')->whereDate('expected_arrival_time', '>=', $today)->count();
     return view('dashboard', [
         'stats' => [
             'users' => User::count(),
@@ -36,6 +55,10 @@ Route::get('dashboard', function () {
             'visits' => Visit::count(),
             'active_visits' => Visit::active()->count(),
             'departments' => Department::count(),
+            'visits_today' => $visitsToday,
+            'visits_yesterday' => $visitsYesterday,
+            'visits_this_week' => $visitsThisWeek,
+            'planned_visits' => $plannedVisits,
         ],
     ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
@@ -108,4 +131,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/Notifications/{notification}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
 });
 
-require __DIR__.'/auth.php';
+// API Routes for Notifications
+Route::middleware(['auth:sanctum'])->prefix('api')->group(function () {
+    Route::get('/notifications', [ApiNotificationController::class, 'index'])->name('api.notifications.index');
+    Route::get('/notifications/unread', [ApiNotificationController::class, 'unread'])->name('api.notifications.unread');
+    Route::post('/notifications/{id}/read', [ApiNotificationController::class, 'markAsRead'])->name('api.notifications.mark-as-read');
+    Route::post('/notifications/mark-all-read', [ApiNotificationController::class, 'markAllAsRead'])->name('api.notifications.mark-all-read');
+    Route::delete('/notifications/{id}', [ApiNotificationController::class, 'destroy'])->name('api.notifications.destroy');
+    Route::delete('/notifications', [ApiNotificationController::class, 'destroyAll'])->name('api.notifications.destroy-all');
+});
+
+require __DIR__ . '/auth.php';

@@ -183,7 +183,7 @@ class VisitController extends Controller
             Notification::create([
                 'user_id' => $visit->employee->user_id,
                 'title' => 'Bezoeker ingecheckt',
-                'message' => 'Je bezoeker ' . $visit->visitor->user->name . ' is aangekomen.',
+                'message' => 'Je bezoeker '.$visit->visitor->user->name.' is aangekomen.',
             ]);
         }
 
@@ -193,7 +193,7 @@ class VisitController extends Controller
     public function checkOut(Visit $visit)
     {
         // eerst ingecheckt?
-        if (!$visit->check_in_time) {
+        if (! $visit->check_in_time) {
             return back()->with('error', 'Visitor has not checked in yet.');
         }
 

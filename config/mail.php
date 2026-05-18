@@ -115,4 +115,15 @@ return [
         'name' => env('MAIL_FROM_NAME', 'Example'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Mailtrap API
+    |--------------------------------------------------------------------------
+    |
+    | If you want to send mail using Mailtrap's HTTP API you can set the
+    | API token in your .env file and use the helper service.
+    |
+    */
+    'mailtrap_api_token' => env('MAILTRAP_API_TOKEN'),
+
 ];

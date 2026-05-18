@@ -14,6 +14,7 @@ use App\Models\Employee;
 use App\Models\User;
 use App\Models\Visit;
 use App\Models\Visitor;
+use Illuminate\Mail\Mailable;
 use Illuminate\Support\Facades\Mail;
 
 beforeEach(function () {
@@ -21,21 +22,21 @@ beforeEach(function () {
 
     $hostUser = User::factory()->create(['name' => 'Henk Medewerker']);
     $this->employee = Employee::create([
-        'user_id'       => $hostUser->id,
+        'user_id' => $hostUser->id,
         'department_id' => $department->id,
-        'function'      => 'Developer',
+        'function' => 'Developer',
     ]);
 
     $visitorUser = User::factory()->create(['name' => 'Jan Bezoeker']);
     $visitor = Visitor::create(['user_id' => $visitorUser->id]);
 
     $this->visit = Visit::create([
-        'visitor_id'            => $visitor->id,
-        'host_employee_id'      => $this->employee->id,
-        'reason_of_visit'       => 'Vergadering',
+        'visitor_id' => $visitor->id,
+        'host_employee_id' => $this->employee->id,
+        'reason_of_visit' => 'Vergadering',
         'expected_arrival_time' => now(),
-        'check_in_time'         => null,
-        'check_out_time'        => null,
+        'check_in_time' => null,
+        'check_out_time' => null,
     ]);
 });
 
@@ -68,5 +69,5 @@ test('medewerker ontvangt een e-mail wanneer zijn bezoeker incheckt', function (
     $this->get(route('visits.checkin', $this->visit));
 
     // Verwacht dat er een mail gestuurd is — maar dat gebeurt nog niet!
-    Mail::assertSent(\Illuminate\Mail\Mailable::class);
+    Mail::assertSent(Mailable::class);
 });
