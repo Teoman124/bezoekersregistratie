@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\NotificationController as ApiNotificationController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\NotificationController;
@@ -108,4 +109,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/Notifications/{notification}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
 });
 
-require __DIR__.'/auth.php';
+// API Routes for Notifications
+Route::middleware(['auth:sanctum'])->prefix('api')->group(function () {
+    Route::get('/notifications', [ApiNotificationController::class, 'index'])->name('api.notifications.index');
+    Route::get('/notifications/unread', [ApiNotificationController::class, 'unread'])->name('api.notifications.unread');
+    Route::post('/notifications/{id}/read', [ApiNotificationController::class, 'markAsRead'])->name('api.notifications.mark-as-read');
+    Route::post('/notifications/mark-all-read', [ApiNotificationController::class, 'markAllAsRead'])->name('api.notifications.mark-all-read');
+    Route::delete('/notifications/{id}', [ApiNotificationController::class, 'destroy'])->name('api.notifications.destroy');
+    Route::delete('/notifications', [ApiNotificationController::class, 'destroyAll'])->name('api.notifications.destroy-all');
+});
+
+require __DIR__ . '/auth.php';

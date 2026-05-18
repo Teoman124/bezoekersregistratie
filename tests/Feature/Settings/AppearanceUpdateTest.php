@@ -33,7 +33,7 @@ class AppearanceUpdateTest extends TestCase
 
         $response->assertSessionHasNoErrors();
         $response->assertRedirect('/settings/appearance');
-        
+
         $this->assertEquals('light', $user->refresh()->theme_preference);
     }
 
