@@ -12,41 +12,59 @@
     </div>
 
     @if(in_array(auth()->user()?->role, ['admin', 'employee'], true))
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-6">
-            <a href="{{ route('users.index') }}"
-                class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700 hover:shadow-md transition">
-                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('Gebruikers') }}</p>
-                <p class="text-2xl font-bold text-gray-800 dark:text-gray-100 mt-1">{{ $stats['users'] }}</p>
-                <p class="text-xs text-blue-600 dark:text-blue-400 mt-2">{{ __('Open gebruikersbeheer') }}</p>
-            </a>
-
-            <a href="{{ route('employees.index') }}"
-                class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700 hover:shadow-md transition">
-                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('Medewerkers') }}</p>
-                <p class="text-2xl font-bold text-gray-800 dark:text-gray-100 mt-1">{{ $stats['employees'] }}</p>
-                <p class="text-xs text-blue-600 dark:text-blue-400 mt-2">{{ __('Open medewerkers') }}</p>
-            </a>
-
-            <a href="{{ route('visitors.index') }}"
-                class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700 hover:shadow-md transition">
-                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('Bezoekers') }}</p>
-                <p class="text-2xl font-bold text-gray-800 dark:text-gray-100 mt-1">{{ $stats['visitors'] }}</p>
-                <p class="text-xs text-blue-600 dark:text-blue-400 mt-2">{{ __('Open bezoekers') }}</p>
-            </a>
-
-            <a href="{{ route('visits.index') }}"
-                class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700 hover:shadow-md transition">
-                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('Bezoeken') }}</p>
-                <p class="text-2xl font-bold text-gray-800 dark:text-gray-100 mt-1">{{ $stats['visits'] }}</p>
-                <p class="text-xs text-blue-600 dark:text-blue-400 mt-2">{{ __('Open bezoeken') }}</p>
-            </a>
-
-            <a href="{{ route('visits.active') }}"
-                class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700 hover:shadow-md transition">
-                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('Aanwezig') }}</p>
-                <p class="text-2xl font-bold text-gray-800 dark:text-gray-100 mt-1">{{ $stats['active_visits'] }}</p>
-                <p class="text-xs text-blue-600 dark:text-blue-400 mt-2">{{ __('Actieve bezoekerslijst') }}</p>
-            </a>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6 mb-6">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border-2 border-gray-300 col-span-2 flex flex-col justify-between">
+                <div class="flex items-center gap-3 mb-2">
+                    <svg class="h-7 w-7 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87M16 3.13a4 4 0 010 7.75M8 3.13a4 4 0 000 7.75"/></svg>
+                    <span class="text-lg font-semibold text-gray-700 dark:text-gray-200">Systeemoverzicht</span>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-2 text-center">
+                    <a href="{{ route('users.index') }}" class="block hover:bg-gray-50 dark:hover:bg-gray-700 rounded p-2">
+                        <div class="text-xs text-gray-500 dark:text-gray-400">Gebruikers</div>
+                        <div class="text-xl font-bold text-gray-800 dark:text-gray-100">{{ $stats['users'] }}</div>
+                    </a>
+                    <a href="{{ route('employees.index') }}" class="block hover:bg-gray-50 dark:hover:bg-gray-700 rounded p-2">
+                        <div class="text-xs text-gray-500 dark:text-gray-400">Medewerkers</div>
+                        <div class="text-xl font-bold text-gray-800 dark:text-gray-100">{{ $stats['employees'] }}</div>
+                    </a>
+                    <a href="{{ route('visitors.index') }}" class="block hover:bg-gray-50 dark:hover:bg-gray-700 rounded p-2">
+                        <div class="text-xs text-gray-500 dark:text-gray-400">Bezoekers</div>
+                        <div class="text-xl font-bold text-gray-800 dark:text-gray-100">{{ $stats['visitors'] }}</div>
+                    </a>
+                    <a href="{{ route('visits.index') }}" class="block hover:bg-gray-50 dark:hover:bg-gray-700 rounded p-2">
+                        <div class="text-xs text-gray-500 dark:text-gray-400">Bezoeken</div>
+                        <div class="text-xl font-bold text-gray-800 dark:text-gray-100">{{ $stats['visits'] }}</div>
+                    </a>
+                    <a href="{{ route('visits.active') }}" class="block hover:bg-gray-50 dark:hover:bg-gray-700 rounded p-2 col-span-2 md:col-span-1">
+                        <div class="text-xs text-gray-500 dark:text-gray-400">Aanwezig</div>
+                        <div class="text-xl font-bold text-gray-800 dark:text-gray-100">{{ $stats['active_visits'] }}</div>
+                    </a>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border-2 border-blue-400 col-span-2 flex flex-col justify-between">
+                <div class="flex items-center gap-3 mb-2">
+                    <svg class="h-7 w-7 text-blue-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/><path stroke-linecap="round" stroke-linejoin="round" d="M8 12l2 2 4-4"/></svg>
+                    <span class="text-lg font-semibold text-blue-700 dark:text-blue-300">Bezoekersoverzicht</span>
+                </div>
+                <div class="grid grid-cols-3 gap-2 text-center">
+                    <div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400">Vandaag</div>
+                        <div class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ $stats['visits_today'] }}</div>
+                    </div>
+                    <div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400">Gisteren</div>
+                        <div class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ $stats['visits_yesterday'] }}</div>
+                    </div>
+                    <div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400">Deze week</div>
+                        <div class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ $stats['visits_this_week'] }}</div>
+                    </div>
+                </div>
+                <div class="mt-4 flex items-center justify-center gap-2">
+                    <svg class="h-5 w-5 text-purple-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="2"/></svg>
+                    <span class="text-sm text-purple-700 dark:text-purple-400">Geplande bezoeken: <span class="font-bold">{{ $stats['planned_visits'] }}</span></span>
+                </div>
+            </div>
         </div>
 
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
