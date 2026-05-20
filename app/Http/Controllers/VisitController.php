@@ -41,6 +41,41 @@ class VisitController extends Controller
         return view('visits.active', compact('visits'));
     }
 
+    public function myVisits(Request $request)
+    {
+        $user = $request->user();
+        $employee = $user?->employee;
+        $visitor = $user?->visitor;
+
+       
+
+        $query = Visit::with(['visitor.user', 'employee.user']);
+
+        if ($employee) {
+            $query->where('host_employee_id', $employee->id);
+        } else {
+            $query->where('visitor_id', $visitor->id);
+        }
+
+        if ($request->filled('status')) {
+            if ($request->status === 'planned') {
+                $query->whereNull('check_in_time');
+            }
+
+            if ($request->status === 'in') {
+                $query->active();
+            }
+
+            if ($request->status === 'out') {
+                $query->whereNotNull('check_out_time');
+            }
+        }
+
+        $visits = $query->latest('expected_arrival_time')->get();
+
+        return view('visits.MyVisits', compact('visits'));
+    }
+
     public function create()
     {
         $employees = Employee::with('department')->get();
@@ -148,7 +183,7 @@ class VisitController extends Controller
             Notification::create([
                 'user_id' => $visit->employee->user_id,
                 'title' => 'Bezoeker ingecheckt',
-                'message' => 'Je bezoeker ' . $visit->visitor->user->name . ' is aangekomen.',
+                'message' => 'Je bezoeker '.$visit->visitor->user->name.' is aangekomen.',
             ]);
         }
 
@@ -158,7 +193,7 @@ class VisitController extends Controller
     public function checkOut(Visit $visit)
     {
         // eerst ingecheckt?
-        if (!$visit->check_in_time) {
+        if (! $visit->check_in_time) {
             return back()->with('error', 'Visitor has not checked in yet.');
         }
 

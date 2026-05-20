@@ -24,7 +24,7 @@ class RegistrationController extends Controller
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
@@ -46,12 +46,12 @@ class RegistrationController extends Controller
     public function storeVisitor(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255', 'unique:' . User::class . ',name'],
+            'name' => ['required', 'string', 'max:255', 'unique:'.User::class.',name'],
         ]);
 
         $user = User::create([
             'name' => $validated['name'],
-            'email' => 'visitor+' . Str::uuid() . '@anonymous.local',
+            'email' => 'visitor+'.Str::uuid().'@anonymous.local',
             'password' => Str::random(40),
             'role' => 'visitor',
         ]);

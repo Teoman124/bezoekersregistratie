@@ -20,9 +20,9 @@ beforeEach(function () {
 
     $hostUser = User::factory()->create();
     $this->employee = Employee::create([
-        'user_id'       => $hostUser->id,
+        'user_id' => $hostUser->id,
         'department_id' => $department->id,
-        'function'      => 'Developer',
+        'function' => 'Developer',
     ]);
 
     $visitorUser = User::factory()->create(['name' => 'Jan Bezoeker']);
@@ -31,12 +31,12 @@ beforeEach(function () {
 
 test('uitchecken slaat de vertrektijd automatisch op', function () {
     $visit = Visit::create([
-        'visitor_id'             => $this->visitor->id,
-        'host_employee_id'       => $this->employee->id,
-        'reason_of_visit'        => 'Vergadering',
-        'expected_arrival_time'  => now()->subHour(),
-        'check_in_time'          => now()->subHour(),
-        'check_out_time'         => null,
+        'visitor_id' => $this->visitor->id,
+        'host_employee_id' => $this->employee->id,
+        'reason_of_visit' => 'Vergadering',
+        'expected_arrival_time' => now()->subHour(),
+        'check_in_time' => now()->subHour(),
+        'check_out_time' => null,
     ]);
 
     $this->get(route('visits.checkout', $visit))
@@ -48,24 +48,24 @@ test('uitchecken slaat de vertrektijd automatisch op', function () {
 test('uitgecheckte bezoeker verdwijnt uit de actieve lijst', function () {
     // Actieve bezoeker (nog aanwezig)
     $activeVisit = Visit::create([
-        'visitor_id'             => $this->visitor->id,
-        'host_employee_id'       => $this->employee->id,
-        'reason_of_visit'        => 'Overleg',
-        'expected_arrival_time'  => now()->subHour(),
-        'check_in_time'          => now()->subHour(),
-        'check_out_time'         => null,
+        'visitor_id' => $this->visitor->id,
+        'host_employee_id' => $this->employee->id,
+        'reason_of_visit' => 'Overleg',
+        'expected_arrival_time' => now()->subHour(),
+        'check_in_time' => now()->subHour(),
+        'check_out_time' => null,
     ]);
 
     // Uitgecheckte bezoeker
     $checkedOutVisitorUser = User::factory()->create(['name' => 'Piet Vertrokken']);
     $checkedOutVisitor = Visitor::create(['user_id' => $checkedOutVisitorUser->id]);
     Visit::create([
-        'visitor_id'             => $checkedOutVisitor->id,
-        'host_employee_id'       => $this->employee->id,
-        'reason_of_visit'        => 'Rondleiding',
-        'expected_arrival_time'  => now()->subHours(2),
-        'check_in_time'          => now()->subHours(2),
-        'check_out_time'         => now()->subMinutes(30),
+        'visitor_id' => $checkedOutVisitor->id,
+        'host_employee_id' => $this->employee->id,
+        'reason_of_visit' => 'Rondleiding',
+        'expected_arrival_time' => now()->subHours(2),
+        'check_in_time' => now()->subHours(2),
+        'check_out_time' => now()->subMinutes(30),
     ]);
 
     // Alleen bezoeken zonder check_out_time zijn "actief"

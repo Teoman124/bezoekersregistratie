@@ -5,7 +5,9 @@
                 <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Bezoek details</h1>
                 <p class="text-sm text-gray-600 dark:text-gray-400">Bekijk alle informatie van dit bezoek.</p>
             </div>
-            <a href="{{ route('visits.edit', $visit) }}" class="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white">Bewerken</a>
+            @if(in_array(auth()->user()?->role, ['admin', 'employee'], true))
+                <a href="{{ route('visits.edit', $visit) }}" class="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white">Bewerken</a>
+            @endif
         </div>
 
         <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 space-y-4">
@@ -42,7 +44,13 @@
         </div>
 
         <div class="flex gap-3">
-            <a href="{{ route('visits.index') }}" class="px-4 py-2 rounded-md border border-gray-300 dark:border-gray-700">Terug</a>
+            @if(in_array(auth()->user()?->role, ['admin'], true))
+                 <a href="{{ route('visits.index') }}" class="px-4 py-2 rounded-md border border-gray-300 dark:border-gray-700">Terug</a>
+            @endif
+            @if(in_array(auth()->user()?->role, ['visitor', 'employee'], true))
+                 <a href="{{ route('visits.myvisits') }}" class="px-4 py-2 rounded-md border border-gray-300 dark:border-gray-700">Terug</a>
+            @endif
+        @if(in_array(auth()->user()?->role, ['admin', 'employee'], true))
             @if(!$visit->check_in_time)
             <form action="{{ route('visits.checkin', $visit) }}" method="POST">
                 @csrf
@@ -52,6 +60,7 @@
             @if($visit->check_in_time && !$visit->check_out_time)
             <a href="{{ route('visits.checkout', $visit) }}" class="px-4 py-2 rounded-md bg-amber-600 hover:bg-amber-700 text-white">Uitchecken</a>
             @endif
+        @endif
         </div>
     </div>
 </x-layouts.app>
