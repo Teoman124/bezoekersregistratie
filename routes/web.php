@@ -9,6 +9,9 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\VisitController;
 use App\Http\Controllers\VisitorController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\NotificationController as ApiNotificationController;
+use App\Http\Middleware\Checkrole;
+
 
 Route::get('/', [DashboardController::class, 'index'])->middleware(['auth', 'verified']);
 Route::get('dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
@@ -23,7 +26,17 @@ Route::middleware(['auth'])->group(function () {
     Route::put('settings/appearance', [Settings\AppearanceController::class, 'update'])->name('settings.appearance.update');
 });
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::get('/Visits/my', [VisitController::class, 'myvisits'])
+    ->middleware(['auth', 'check.role:employee,visitor' ])
+    ->name('visits.myvisits');
+Route::get('/Visits/{visit}', [VisitController::class, 'show'])
+    ->name('visits.show')
+    ->middleware(['auth', 'check.role:admin,employee,visitor']);
+
+
+
+
+Route::middleware(['auth', 'check.role:admin,employee'])->group(function () {
     // Bezoeken
     Route::get('/Visits', [VisitController::class, 'index'])->name('visits.index');
     Route::get('/Visits/active', [VisitController::class, 'active'])->name('visits.active');
@@ -35,8 +48,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/Visits/{visit}', [VisitController::class, 'destroy'])->name('visits.destroy');
     Route::match(['get', 'post'], '/Visits/checkin/{visit}', [VisitController::class, 'checkIn'])->name('visits.checkin');
     Route::get('/Visits/checkout/{visit}', [VisitController::class, 'checkOut'])->name('visits.checkout');
-
-    // Medewerkers
+});
+// Medewerkers
+Route::middleware(['auth', 'check.role:admin',])->group(function () {
     Route::get('/Employees', [EmployeeController::class, 'index'])->name('employees.index');
     Route::get('/Employees/create', [EmployeeController::class, 'create'])->name('employees.create');
     Route::post('/Employees', [EmployeeController::class, 'store'])->name('employees.store');
@@ -44,8 +58,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/Employees/{employee}/edit', [EmployeeController::class, 'edit'])->name('employees.edit');
     Route::put('/Employees/{employee}', [EmployeeController::class, 'update'])->name('employees.update');
     Route::delete('/Employees/{employee}', [EmployeeController::class, 'destroy'])->name('employees.destroy');
+});
 
-    // Afdelingen
+// Afdelingen
+Route::middleware(['auth', 'check.role:admin'])->group(function () {
     Route::get('/Departments', [DepartmentController::class, 'index'])->name('departments.index');
     Route::get('/Departments/create', [DepartmentController::class, 'create'])->name('departments.create');
     Route::post('/Departments', [DepartmentController::class, 'store'])->name('departments.store');
@@ -53,8 +69,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/Departments/{department}/edit', [DepartmentController::class, 'edit'])->name('departments.edit');
     Route::put('/Departments/{department}', [DepartmentController::class, 'update'])->name('departments.update');
     Route::delete('/Departments/{department}', [DepartmentController::class, 'destroy'])->name('departments.destroy');
-
-    // Gebruikers
+});
+// Gebruikers
+Route::middleware(['auth', 'check.role:admin,employee'])->group(function () {
     Route::get('/Users', [UserController::class, 'index'])->name('users.index');
     Route::get('/Users/create', [UserController::class, 'create'])->name('users.create');
     Route::post('/Users', [UserController::class, 'store'])->name('users.store');
@@ -62,8 +79,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/Users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
     Route::put('/Users/{user}', [UserController::class, 'update'])->name('users.update');
     Route::delete('/Users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
-
-    // Bezoekers
+});
+// Bezoekers
+Route::middleware(['auth', 'check.role:admin,employee'])->group(function () {
     Route::get('/Visitors', [VisitorController::class, 'index'])->name('visitors.index');
     Route::get('/Visitors/create', [VisitorController::class, 'create'])->name('visitors.create');
     Route::post('/Visitors', [VisitorController::class, 'store'])->name('visitors.store');
@@ -71,8 +89,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/Visitors/{visitor}/edit', [VisitorController::class, 'edit'])->name('visitors.edit');
     Route::put('/Visitors/{visitor}', [VisitorController::class, 'update'])->name('visitors.update');
     Route::delete('/Visitors/{visitor}', [VisitorController::class, 'destroy'])->name('visitors.destroy');
-
-    // Notificaties
+});
+// Notificaties
+Route::middleware(['auth', 'check.role:admin', 'verified'])->group(function () {
     Route::get('/Notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::get('/Notifications/{notification}', [NotificationController::class, 'show'])->name('notifications.show');
     Route::get('/Notifications/{notification}/edit', [NotificationController::class, 'edit'])->name('notifications.edit');
