@@ -42,6 +42,10 @@ class VisitorController extends Controller
 
     public function show(Visitor $visitor)
     {
+        $visitor->load(['visits' => function ($query) {
+            $query->with('employee.user', 'employee.department');
+        }]);
+
         return view('visitors.show', compact('visitor'));
     }
 

@@ -41,6 +41,50 @@ class VisitController extends Controller
         return view('visits.active', compact('visits'));
     }
 
+    public function history(Request $request)
+    {
+        $query = Visit::with(['visitor.user', 'employee.user', 'employee.department']);
+
+        // Status filter
+        if ($request->filled('status')) {
+            if ($request->status === 'completed') {
+                $query->whereNotNull('check_out_time');
+            } elseif ($request->status === 'active') {
+                $query->whereNotNull('check_in_time')
+                    ->whereNull('check_out_time');
+            } elseif ($request->status === 'planned') {
+                $query->whereNull('check_in_time');
+            }
+        }
+
+        // Date filter
+        if ($request->filled('date_filter')) {
+            if ($request->date_filter === 'yesterday') {
+                $query->whereDate('expected_arrival_time', now()->subDay());
+            } elseif ($request->date_filter === 'week') {
+                $query->whereBetween('expected_arrival_time', [
+                    now()->subDays(7)->startOfDay(),
+                    now()->endOfDay(),
+                ]);
+            } elseif ($request->date_filter === 'month') {
+                $query->whereDate('expected_arrival_time', '>=', now()->startOfMonth())
+                    ->whereDate('expected_arrival_time', '<=', now()->endOfMonth());
+            }
+        }
+
+        // Sorting
+        $sortBy = $request->get('sort', 'expected_arrival_time');
+        $sortOrder = $request->get('order', 'desc');
+
+        if (in_array($sortBy, ['expected_arrival_time', 'check_in_time', 'check_out_time', 'created_at'])) {
+            $query->orderBy($sortBy, $sortOrder);
+        }
+
+        $visits = $query->get();
+
+        return view('visits.history', compact('visits'));
+    }
+
     public function myVisits(Request $request)
 {
     $user = $request->user();

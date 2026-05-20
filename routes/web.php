@@ -29,6 +29,9 @@ Route::middleware(['auth'])->group(function () {
 Route::get('/Visits/my', [VisitController::class, 'myvisits'])
     ->middleware(['auth', 'check.role:employee,visitor' ])
     ->name('visits.myvisits');
+Route::get('/Visits/history', [VisitController::class, 'history'])
+    ->middleware(['auth', 'check.role:admin,employee'])
+    ->name('visits.history');
 Route::get('/Visits/{visit}', [VisitController::class, 'show'])
     ->name('visits.show')
     ->middleware(['auth', 'check.role:admin,employee,visitor']);

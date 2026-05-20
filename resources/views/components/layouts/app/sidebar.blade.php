@@ -27,6 +27,9 @@
 
                 <x-layouts.sidebar-link href="{{ route('notifications.index') }}" icon='fas-bell'
                     :active="request()->routeIs('notifications.*')">Notificaties</x-layouts.sidebar-link>
+
+                <x-layouts.sidebar-link href="{{ route('visits.history') }}" icon='fas-chart-bar'
+                    :active="request()->routeIs('visits.history')">Geschiedenis</x-layouts.sidebar-link>
                 @endif
 
                 @if(in_array(auth()->user()?->role, ['employee', 'visitor', 'admin'], true))
