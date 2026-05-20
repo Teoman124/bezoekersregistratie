@@ -10,7 +10,6 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\VisitController;
 use App\Http\Controllers\VisitorController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\NotificationController as ApiNotificationController;
 use App\Http\Middleware\Checkrole;
 
 
