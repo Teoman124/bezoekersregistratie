@@ -18,7 +18,7 @@
 
                 <div class="flex gap-3 pt-2">
                     <x-button type="primary" class="flex-1">{{ __('Continue') }}</x-button>
-                    <a href="{{ route('dashboard') }}"
+                    <a href="{{ route('home') }}"
                         class="flex-1 inline-flex items-center justify-center px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition">
                         {{ __('Skip') }}
                     </a>

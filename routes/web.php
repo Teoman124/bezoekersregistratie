@@ -14,8 +14,17 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\Checkrole;
 
 
-Route::get('/', [DashboardController::class, 'index'])->middleware(['auth', 'check.role:admin,employee']);
-Route::get('dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/', function () {
+    if (auth()->user()?->role === 'visitor') {
+        return redirect()->route('visits.myvisits');
+    }
+
+    return redirect()->route('dashboard');
+})->middleware(['auth', 'check.role:admin,employee,visitor'])->name('home');
+
+Route::get('dashboard', [DashboardController::class, 'index'])
+    ->middleware(['auth', 'verified', 'check.role:admin,employee'])
+    ->name('dashboard');
 
 Route::middleware(['auth'])->group(function () {
     Route::get('settings/profile', [Settings\ProfileController::class, 'edit'])->name('settings.profile.edit');
