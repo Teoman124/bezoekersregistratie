@@ -1,7 +1,7 @@
 <?php
 
-use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Api\NotificationController as ApiNotificationController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\MailboxController;
@@ -11,8 +11,6 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\VisitController;
 use App\Http\Controllers\VisitorController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Middleware\Checkrole;
-
 
 Route::get('/', function () {
     if (auth()->user()?->role === 'visitor') {
@@ -37,7 +35,7 @@ Route::middleware(['auth'])->group(function () {
 });
 
 Route::get('/Visits/my', [VisitController::class, 'myvisits'])
-    ->middleware(['auth', 'check.role:employee,visitor' ])
+    ->middleware(['auth', 'check.role:employee,visitor'])
     ->name('visits.myvisits');
 Route::get('/Visits/history', [VisitController::class, 'history'])
     ->middleware(['auth', 'check.role:admin,employee'])
@@ -45,9 +43,6 @@ Route::get('/Visits/history', [VisitController::class, 'history'])
 Route::get('/Visits/{visit}', [VisitController::class, 'show'])
     ->name('visits.show')
     ->middleware(['auth', 'check.role:admin,employee,visitor']);
-
-
-
 
 Route::middleware(['auth', 'check.role:admin,employee'])->group(function () {
     // Bezoeken
@@ -63,7 +58,7 @@ Route::middleware(['auth', 'check.role:admin,employee'])->group(function () {
     Route::get('/Visits/checkout/{visit}', [VisitController::class, 'checkOut'])->name('visits.checkout');
 });
 // Medewerkers
-Route::middleware(['auth', 'check.role:admin',])->group(function () {
+Route::middleware(['auth', 'check.role:admin'])->group(function () {
     Route::get('/Employees', [EmployeeController::class, 'index'])->name('employees.index');
     Route::get('/Employees/create', [EmployeeController::class, 'create'])->name('employees.create');
     Route::post('/Employees', [EmployeeController::class, 'store'])->name('employees.store');
@@ -123,7 +118,7 @@ Route::middleware(['auth:sanctum'])->prefix('api')->group(function () {
     Route::delete('/notifications', [ApiNotificationController::class, 'destroyAll'])->name('api.notifications.destroy-all');
 });
 
- // Mailbox
+// Mailbox
 Route::middleware(['auth', 'check.role:admin,employee'])->group(function () {
     Route::get('/Mailbox', [MailboxController::class, 'index'])->name('mailbox.index');
     Route::get('/Mailbox/create', [MailboxController::class, 'create'])->name('mailbox.create');
@@ -131,5 +126,5 @@ Route::middleware(['auth', 'check.role:admin,employee'])->group(function () {
     Route::get('/Mailbox/{mailboxMessage}', [MailboxController::class, 'show'])->name('mailbox.show');
     Route::delete('/Mailbox/{mailboxMessage}', [MailboxController::class, 'destroy'])->name('mailbox.destroy');
 });
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';
 // niet meer veranderen nu T_T

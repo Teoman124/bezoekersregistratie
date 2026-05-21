@@ -31,20 +31,20 @@
                             @endif
                         </td>
                         <td class="px-4 py-3">
-                            <div class="flex gap-3">
-                                <a href="{{ route('notifications.show', $notification) }}" class="text-blue-600 hover:underline">Bekijken</a>
-                                <a href="{{ route('notifications.edit', $notification) }}" class="text-blue-600 hover:underline">Bewerken</a>
+                            <div class="flex flex-wrap gap-2 items-center">
+                                @include('components.action-buttons', [
+                                    'show' => route('notifications.show', $notification),
+                                    'edit' => route('notifications.edit', $notification),
+                                    'destroy' => route('notifications.destroy', $notification),
+                                    'deleteConfirm' => 'Weet je zeker dat je deze notificatie wilt verwijderen?'
+                                ])
+
                                 @if(!$notification->read)
-                                    <form action="{{ route('notifications.markAsRead', $notification) }}" method="POST">
+                                    <form action="{{ route('notifications.markAsRead', $notification) }}" method="POST" class="inline-flex">
                                         @csrf
-                                        <button type="submit" class="text-blue-600 hover:underline">Markeer als gelezen</button>
+                                        <button type="submit" class="px-3 py-1 rounded-full bg-blue-600 text-white text-xs hover:bg-blue-700">Markeer als gelezen</button>
                                     </form>
                                 @endif
-                                <form action="{{ route('notifications.destroy', $notification) }}" method="POST" onsubmit="return confirm('Weet je zeker dat je deze notificatie wilt verwijderen?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="text-red-600 hover:underline">Verwijderen</button>
-                                </form>
                             </div>
                         </td>
                     </tr>

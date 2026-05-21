@@ -22,15 +22,12 @@
                         <td class="px-4 py-3">{{ $department->name }}</td>
                         <td class="px-4 py-3">{{ $department->employees_count ?? $department->employees->count() ?? 0 }}</td>
                         <td class="px-4 py-3">
-                            <div class="flex gap-3">
-                                <a href="{{ route('departments.show', $department) }}" class="text-blue-600 hover:underline">Bekijken</a>
-                                <a href="{{ route('departments.edit', $department) }}" class="text-blue-600 hover:underline">Bewerken</a>
-                                <form action="{{ route('departments.destroy', $department) }}" method="POST" onsubmit="return confirm('Weet je zeker dat je deze afdeling wilt verwijderen?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="text-red-600 hover:underline">Verwijderen</button>
-                                </form>
-                            </div>
+                            @include('components.action-buttons', [
+                                'show' => route('departments.show', $department),
+                                'edit' => route('departments.edit', $department),
+                                'destroy' => route('departments.destroy', $department),
+                                'deleteConfirm' => 'Weet je zeker dat je deze afdeling wilt verwijderen?'
+                            ])
                         </td>
                     </tr>
                 @empty

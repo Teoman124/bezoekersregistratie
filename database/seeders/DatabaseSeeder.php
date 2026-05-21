@@ -169,6 +169,6 @@ class DatabaseSeeder extends Seeder
         );
 
         // Mailbox sample data
-        $this->call(\Database\Seeders\MailboxSeeder::class);
+        $this->call(MailboxSeeder::class);
     }
 }

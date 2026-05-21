@@ -15,8 +15,8 @@ class MailboxController extends Controller
         $notifications = MailboxMessage::with(['sender', 'recipient'])
             ->when(
                 $folder === 'sent',
-                fn($query) => $query->where('sender_id', auth()->id()),
-                fn($query) => $query->where('recipient_id', auth()->id())
+                fn ($query) => $query->where('sender_id', auth()->id()),
+                fn ($query) => $query->where('recipient_id', auth()->id())
             )
             ->latest()
             ->get();
@@ -49,7 +49,7 @@ class MailboxController extends Controller
             403
         );
 
-        if ($notification->recipient_id === auth()->id() && !$notification->read) {
+        if ($notification->recipient_id === auth()->id() && ! $notification->read) {
             $notification->update(['read' => true]);
         }
 

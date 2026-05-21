@@ -63,7 +63,7 @@ class NotifyEmployeeOfArrivingVisitor extends Command
 
             $notificationKey = "visitor_notification_{$visit->id}_{$type}";
 
-            if (!cache()->has($notificationKey)) {
+            if (! cache()->has($notificationKey)) {
                 $employee = $visit->employee;
 
                 if ($employee && $employee->user) {
