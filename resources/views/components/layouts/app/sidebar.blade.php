@@ -25,16 +25,11 @@
                 <x-layouts.sidebar-link href="{{ route('departments.index') }}" icon='fas-building'
                     :active="request()->routeIs('departments.*')">Afdelingen</x-layouts.sidebar-link>
 
-                <x-layouts.sidebar-link href="{{ route('notifications.index') }}" icon='fas-bell'
-                    :active="request()->routeIs('notifications.*')">Notificaties</x-layouts.sidebar-link>
+                    <x-layouts.sidebar-link href="{{ route('mailbox.index') }}" icon='fas-inbox'
+                        :active="request()->routeIs('mailbox.*')">Mailbox</x-layouts.sidebar-link>
 
-                <x-layouts.sidebar-link href="{{ route('visits.history') }}" icon='fas-chart-bar'
-                    :active="request()->routeIs('visits.history')">Geschiedenis</x-layouts.sidebar-link>
-                @endif
-
-                @if(in_array(auth()->user()?->role, ['employee', 'visitor', 'admin'], true))
-                <x-layouts.sidebar-link href="{{ route('visits.myvisits') }}" icon='fas-calendar-check'
-                    :active="request()->routeIs('visits.myvisits')">Mijn bezoeken</x-layouts.sidebar-link>
+                    <x-layouts.sidebar-link href="{{ route('notifications.index') }}" icon='fas-bell'
+                        :active="request()->routeIs('notifications.*')">Notificaties</x-layouts.sidebar-link>
                 @endif
             </ul>
         </nav>
