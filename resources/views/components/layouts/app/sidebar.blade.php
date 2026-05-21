@@ -27,7 +27,7 @@
                 @if(in_array(auth()->user()?->role, ['admin', 'employee'], true))
                   
                         <x-layouts.sidebar-link href="{{ route('visits.index') }}" icon='fas-calendar-check'
-                            :active="request()->routeIs('visits.*')">Bezoeken</x-layouts.sidebar-link>
+                            :active="request()->routeIs('visits.index')">Bezoeken</x-layouts.sidebar-link>
                    
                         <x-layouts.sidebar-link href="{{ route('visitors.index') }}" icon='fas-id-card'
                             :active="request()->routeIs('visitors.*')">Bezoekers</x-layouts.sidebar-link>
