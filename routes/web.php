@@ -114,5 +114,13 @@ Route::middleware(['auth:sanctum'])->prefix('api')->group(function () {
     Route::delete('/notifications', [ApiNotificationController::class, 'destroyAll'])->name('api.notifications.destroy-all');
 });
 
+ // Mailbox
+Route::middleware(['auth', 'check.role:admin,employee'])->group(function () {
+    Route::get('/Mailbox', [MailboxController::class, 'index'])->name('mailbox.index');
+    Route::get('/Mailbox/create', [MailboxController::class, 'create'])->name('mailbox.create');
+    Route::post('/Mailbox', [MailboxController::class, 'store'])->name('mailbox.store');
+    Route::get('/Mailbox/{mailboxMessage}', [MailboxController::class, 'show'])->name('mailbox.show');
+    Route::delete('/Mailbox/{mailboxMessage}', [MailboxController::class, 'destroy'])->name('mailbox.destroy');
+});
 require __DIR__ . '/auth.php';
 // niet meer veranderen nu T_T
