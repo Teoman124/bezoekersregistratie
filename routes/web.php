@@ -115,3 +115,4 @@ Route::middleware(['auth:sanctum'])->prefix('api')->group(function () {
 });
 
 require __DIR__ . '/auth.php';
+// niet meer veranderen nu T_T
