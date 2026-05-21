@@ -41,6 +41,90 @@ class VisitController extends Controller
         return view('visits.active', compact('visits'));
     }
 
+    public function history(Request $request)
+    {
+        $query = Visit::with(['visitor.user', 'employee.user', 'employee.department']);
+
+        // Status filter
+        if ($request->filled('status')) {
+            if ($request->status === 'completed') {
+                $query->whereNotNull('check_out_time');
+            } elseif ($request->status === 'active') {
+                $query->whereNotNull('check_in_time')
+                    ->whereNull('check_out_time');
+            } elseif ($request->status === 'planned') {
+                $query->whereNull('check_in_time');
+            }
+        }
+
+        // Date filter
+        if ($request->filled('date_filter')) {
+            if ($request->date_filter === 'yesterday') {
+                $query->whereDate('expected_arrival_time', now()->subDay());
+            } elseif ($request->date_filter === 'week') {
+                $query->whereBetween('expected_arrival_time', [
+                    now()->subDays(7)->startOfDay(),
+                    now()->endOfDay(),
+                ]);
+            } elseif ($request->date_filter === 'month') {
+                $query->whereDate('expected_arrival_time', '>=', now()->startOfMonth())
+                    ->whereDate('expected_arrival_time', '<=', now()->endOfMonth());
+            }
+        }
+
+        // Sorting
+        $sortBy = $request->get('sort', 'expected_arrival_time');
+        $sortOrder = $request->get('order', 'desc');
+
+        if (in_array($sortBy, ['expected_arrival_time', 'check_in_time', 'check_out_time', 'created_at'])) {
+            $query->orderBy($sortBy, $sortOrder);
+        }
+
+        $visits = $query->get();
+
+        return view('visits.history', compact('visits'));
+    }
+
+    public function myVisits(Request $request)
+{
+    $user = $request->user();
+
+    $query = Visit::with(['visitor.user', 'employee.user'])
+        ->where(function ($q) use ($user) {
+
+            // visitor ownership
+            if ($user->visitor) {
+                $q->orWhere('visitor_id', $user->visitor->id);
+            }
+
+            // employee ownership
+            if ($user->employee) {
+                $q->orWhere('host_employee_id', $user->employee->id);
+            }
+
+            // optional: direct user link (als je dat gebruikt in DB)
+            $q->orWhere('user_id', $user->id);
+        });
+
+    if ($request->filled('status')) {
+        if ($request->status === 'planned') {
+            $query->whereNull('check_in_time');
+        }
+
+        if ($request->status === 'in') {
+            $query->active();
+        }
+
+        if ($request->status === 'out') {
+            $query->whereNotNull('check_out_time');
+        }
+    }
+
+    $visits = $query->latest('expected_arrival_time')->get();
+
+    return view('visits.MyVisits', compact('visits'));
+}
+
     public function create()
     {
         $employees = Employee::with('department')->get();
@@ -148,7 +232,7 @@ class VisitController extends Controller
             Notification::create([
                 'user_id' => $visit->employee->user_id,
                 'title' => 'Bezoeker ingecheckt',
-                'message' => 'Je bezoeker '.$visit->visitor->user->name.' is aangekomen.',
+                'message' => 'Je bezoeker ' . $visit->visitor->user->name . ' is aangekomen.',
             ]);
         }
 
@@ -158,7 +242,7 @@ class VisitController extends Controller
     public function checkOut(Visit $visit)
     {
         // eerst ingecheckt?
-        if (! $visit->check_in_time) {
+        if (!$visit->check_in_time) {
             return back()->with('error', 'Visitor has not checked in yet.');
         }
 
