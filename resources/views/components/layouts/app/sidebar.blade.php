@@ -25,6 +25,9 @@
                     <x-layouts.sidebar-link href="{{ route('departments.index') }}" icon='fas-building'
                         :active="request()->routeIs('departments.*')">Afdelingen</x-layouts.sidebar-link>
 
+                    <x-layouts.sidebar-link href="{{ route('mailbox.index') }}" icon='fas-inbox'
+                        :active="request()->routeIs('mailbox.*')">Mailbox</x-layouts.sidebar-link>
+
                     <x-layouts.sidebar-link href="{{ route('notifications.index') }}" icon='fas-bell'
                         :active="request()->routeIs('notifications.*')">Notificaties</x-layouts.sidebar-link>
                 @endif

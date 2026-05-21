@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\NotificationController as ApiNotificationController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\MailboxController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Settings;
 use App\Http\Controllers\UserController;
@@ -23,6 +24,7 @@ Route::get('/', function () {
     $visitsYesterday = Visit::whereDate('expected_arrival_time', $yesterday)->count();
     $visitsThisWeek = Visit::whereBetween('expected_arrival_time', [$startOfWeek, $today->copy()->endOfDay()])->count();
     $plannedVisits = Visit::whereNull('check_in_time')->whereDate('expected_arrival_time', '>=', $today)->count();
+
     return view('dashboard', [
         'stats' => [
             'users' => User::count(),
@@ -47,6 +49,7 @@ Route::get('dashboard', function () {
     $visitsYesterday = Visit::whereDate('expected_arrival_time', $yesterday)->count();
     $visitsThisWeek = Visit::whereBetween('expected_arrival_time', [$startOfWeek, $today->copy()->endOfDay()])->count();
     $plannedVisits = Visit::whereNull('check_in_time')->whereDate('expected_arrival_time', '>=', $today)->count();
+
     return view('dashboard', [
         'stats' => [
             'users' => User::count(),
@@ -121,6 +124,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/Visitors/{visitor}/edit', [VisitorController::class, 'edit'])->name('visitors.edit');
     Route::put('/Visitors/{visitor}', [VisitorController::class, 'update'])->name('visitors.update');
     Route::delete('/Visitors/{visitor}', [VisitorController::class, 'destroy'])->name('visitors.destroy');
+
+    // Mailbox
+    Route::get('/Mailbox', [MailboxController::class, 'index'])->name('mailbox.index');
+    Route::get('/Mailbox/create', [MailboxController::class, 'create'])->name('mailbox.create');
+    Route::post('/Mailbox', [MailboxController::class, 'store'])->name('mailbox.store');
+    Route::get('/Mailbox/{mailboxMessage}', [MailboxController::class, 'show'])->name('mailbox.show');
+    Route::delete('/Mailbox/{mailboxMessage}', [MailboxController::class, 'destroy'])->name('mailbox.destroy');
 
     // Notificaties
     Route::get('/Notifications', [NotificationController::class, 'index'])->name('notifications.index');

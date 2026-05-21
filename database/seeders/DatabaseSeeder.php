@@ -167,5 +167,8 @@ class DatabaseSeeder extends Seeder
                 'read' => true,
             ]
         );
+
+        // Mailbox sample data
+        $this->call(\Database\Seeders\MailboxSeeder::class);
     }
 }
