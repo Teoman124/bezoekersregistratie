@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\Checkrole;
 
 
-Route::get('/', [DashboardController::class, 'index'])->middleware(['auth', 'verified']);
+Route::get('/', [DashboardController::class, 'index'])->middleware(['auth', 'check.role:admin,employee']);
 Route::get('dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware(['auth'])->group(function () {
@@ -94,7 +94,7 @@ Route::middleware(['auth', 'check.role:admin,employee'])->group(function () {
     Route::delete('/Visitors/{visitor}', [VisitorController::class, 'destroy'])->name('visitors.destroy');
 });
 // Notificaties
-Route::middleware(['auth', 'check.role:admin', 'verified'])->group(function () {
+Route::middleware(['auth', 'check.role:admin'])->group(function () {
     Route::get('/Notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::get('/Notifications/{notification}', [NotificationController::class, 'show'])->name('notifications.show');
     Route::get('/Notifications/{notification}/edit', [NotificationController::class, 'edit'])->name('notifications.edit');
