@@ -7,8 +7,10 @@
             <ul class="space-y-1 px-2">
                 <!-- Dashboard -->
                 
+                <x-layouts.sidebar-link href="{{ route('home') }}" icon='fas-house' :active="request()->routeIs('home')">Home</x-layouts.sidebar-link>
+
                  @if(in_array(auth()->user()?->role, ['admin', 'employee'], true))
-                        <x-layouts.sidebar-link href="{{ route('dashboard') }}" icon='fas-house'
+                        <x-layouts.sidebar-link href="{{ route('dashboard') }}" icon='fas-tachometer-alt'
                             :active="request()->routeIs('dashboard*')">Dashboard</x-layouts.sidebar-link>
                 @endif
                 @if(in_array(auth()->user()?->role, ['admin'], true))

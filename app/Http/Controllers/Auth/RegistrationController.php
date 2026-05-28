@@ -78,13 +78,13 @@ class RegistrationController extends Controller
 
         $request->session()->forget('visitor_company_prompt_skipped');
 
-        return redirect(route('home', absolute: false))->with('success', 'Bedrijfinformatie opgeslagen!');
+        return redirect(route('visits.myvisits', absolute: false))->with('success', 'Bedrijfinformatie opgeslagen!');
     }
 
     public function skipCompanyInfo(Request $request): RedirectResponse
     {
         $request->session()->put('visitor_company_prompt_skipped', true);
 
-        return redirect(route('home', absolute: false));
+        return redirect(route('visits.myvisits', absolute: false));
     }
 }

@@ -42,18 +42,10 @@ class LoginController extends Controller
         $request->session()->regenerate();
 
         if (auth()->user()->role === 'visitor') {
-            $intended = $request->session()->get('url.intended');
-
-            if ($intended && str_contains(parse_url($intended, PHP_URL_PATH), '/dashboard')) {
-                $request->session()->forget('url.intended');
-            }
-
-            $redirectUrl = route('home', absolute: false);
-        } else {
-            $redirectUrl = route('dashboard', absolute: false);
+            return redirect()->intended(route('visits.myvisits', absolute: false));
         }
 
-        return redirect()->intended($redirectUrl)->with('success', 'Je bent succesvol ingelogd!');
+        return redirect()->intended(route('dashboard', absolute: false))->with('success', 'Je bent succesvol ingelogd!');
     }
 
     public function createVisitor(): View
@@ -87,7 +79,7 @@ class LoginController extends Controller
         RateLimiter::clear($this->visitorThrottleKey($request));
         $request->session()->regenerate();
 
-        return redirect()->intended(route('home', absolute: false));
+        return redirect()->intended(route('visits.myvisits', absolute: false));
     }
 
     public function destroy(Request $request): RedirectResponse

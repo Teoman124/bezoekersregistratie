@@ -33,7 +33,7 @@ class DashboardTest extends TestCase
             ->assertForbidden();
     }
 
-    public function test_visitors_are_redirected_to_my_visits_from_home(): void
+    public function test_homepage_is_accessible_for_visitors(): void
     {
         $user = User::factory()->create([
             'role' => 'visitor',
@@ -41,7 +41,8 @@ class DashboardTest extends TestCase
 
         $this->actingAs($user)
             ->get('/')
-            ->assertRedirect(route('visits.myvisits', absolute: false));
+            ->assertOk()
+            ->assertSee('Bezoekersregistratie');
     }
 
     public function test_visitors_can_skip_the_company_prompt_for_the_current_session(): void
@@ -54,9 +55,10 @@ class DashboardTest extends TestCase
 
         $this->actingAs($user)
             ->post(route('visitor.company-info.skip'))
-            ->assertRedirect(route('home', absolute: false));
+            ->assertRedirect(route('visits.myvisits', absolute: false));
 
         $this->get('/')
-            ->assertRedirect(route('visits.myvisits', absolute: false));
+            ->assertOk()
+            ->assertSee('Bezoekersregistratie');
     }
 }
