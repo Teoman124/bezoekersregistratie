@@ -40,7 +40,7 @@ class RegistrationController extends Controller
 
         Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false))->with('success', 'Welkom! Je account is succesvol aangemaakt.');
+        return redirect(route('home', absolute: false))->with('success', 'Welkom! Je account is succesvol aangemaakt.');
     }
 
     public function createVisitor(): View
@@ -84,13 +84,13 @@ class RegistrationController extends Controller
 
         $request->session()->forget('visitor_company_prompt_skipped');
 
-        return redirect(route('dashboard', absolute: false))->with('success', 'Bedrijfinformatie opgeslagen!');
+        return redirect(route('visits.myvisits', absolute: false))->with('success', 'Bedrijfinformatie opgeslagen!');
     }
 
     public function skipCompanyInfo(Request $request): RedirectResponse
     {
         $request->session()->put('visitor_company_prompt_skipped', true);
 
-        return redirect(route('dashboard', absolute: false));
+        return redirect(route('visits.myvisits', absolute: false));
     }
 }

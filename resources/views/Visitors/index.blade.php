@@ -41,15 +41,12 @@
                     <td class="px-4 py-3">{{ $visitor->user->email ?? '-' }}</td>
                     <td class="px-4 py-3">{{ optional($visitor->created_at)->format('d-m-Y H:i') ?? '-' }}</td>
                     <td class="px-4 py-3">
-                        <div class="flex gap-3">
-                            <a href="{{ route('visitors.show', $visitor) }}" class="text-blue-600 hover:underline">Bekijken</a>
-                            <a href="{{ route('visitors.edit', $visitor) }}" class="text-blue-600 hover:underline">Bewerken</a>
-                            <form action="{{ route('visitors.destroy', $visitor) }}" method="POST" onsubmit="return confirm('Weet je zeker dat je deze bezoeker wilt verwijderen?');">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="text-red-600 hover:underline">Verwijderen</button>
-                            </form>
-                        </div>
+                        @include('components.action-buttons', [
+                            'show' => route('visitors.show', $visitor),
+                            'edit' => route('visitors.edit', $visitor),
+                            'destroy' => route('visitors.destroy', $visitor),
+                            'deleteConfirm' => 'Weet je zeker dat je deze bezoeker wilt verwijderen?'
+                        ])
                     </td>
                 </tr>
                 @empty

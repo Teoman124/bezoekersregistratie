@@ -12,8 +12,11 @@ use App\Http\Controllers\VisitController;
 use App\Http\Controllers\VisitorController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', [DashboardController::class, 'index'])->middleware(['auth', 'check.role:admin,employee']);
-Route::get('dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
+Route::view('/', 'home')->name('home');
+
+Route::get('dashboard', [DashboardController::class, 'index'])
+    ->middleware(['auth', 'verified', 'check.role:admin,employee'])
+    ->name('dashboard');
 
 Route::middleware(['auth'])->group(function () {
     Route::get('settings/profile', [Settings\ProfileController::class, 'edit'])->name('settings.profile.edit');
@@ -26,7 +29,7 @@ Route::middleware(['auth'])->group(function () {
 });
 
 Route::get('/Visits/my', [VisitController::class, 'myvisits'])
-    ->middleware(['auth', 'check.role:employee,admin'])
+    ->middleware(['auth', 'check.role:employee,visitor'])
     ->name('visits.myvisits');
 Route::get('/Visits/history', [VisitController::class, 'history'])
     ->middleware(['auth', 'check.role:admin,employee'])
@@ -34,7 +37,7 @@ Route::get('/Visits/history', [VisitController::class, 'history'])
 Route::get('/Visits/{visit}', [VisitController::class, 'show'])
     ->whereNumber('visit')
     ->name('visits.show')
-    ->middleware(['auth', 'check.role:admin,employee']);
+    ->middleware(['auth', 'check.role:admin,employee,visitor']);
 
 Route::middleware(['auth', 'check.role:admin,employee'])->group(function () {
     // Bezoeken
@@ -90,7 +93,7 @@ Route::middleware(['auth', 'check.role:admin,employee'])->group(function () {
     Route::delete('/Visitors/{visitor}', [VisitorController::class, 'destroy'])->name('visitors.destroy');
 });
 // Notificaties
-Route::middleware(['auth', 'check.role:admin'])->group(function () {
+Route::middleware(['auth', 'check.role:admin,employee,visitor'])->group(function () {
     Route::get('/Notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::get('/Notifications/{notification}', [NotificationController::class, 'show'])->name('notifications.show');
     Route::get('/Notifications/{notification}/edit', [NotificationController::class, 'edit'])->name('notifications.edit');

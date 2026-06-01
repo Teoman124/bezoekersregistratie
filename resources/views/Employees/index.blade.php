@@ -28,15 +28,12 @@
                         <td class="px-4 py-3">{{ $employee->department->name ?? '-' }}</td>
                         <td class="px-4 py-3">{{ $employee->function ?? '-' }}</td>
                         <td class="px-4 py-3">
-                            <div class="flex gap-3">
-                                <a href="{{ route('employees.show', $employee) }}" class="text-blue-600 hover:underline">Bekijken</a>
-                                <a href="{{ route('employees.edit', $employee) }}" class="text-blue-600 hover:underline">Bewerken</a>
-                                <form action="{{ route('employees.destroy', $employee) }}" method="POST" onsubmit="return confirm('Weet je zeker dat je deze medewerker wilt verwijderen?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="text-red-600 hover:underline">Verwijderen</button>
-                                </form>
-                            </div>
+                            @include('components.action-buttons', [
+                                'show' => route('employees.show', $employee),
+                                'edit' => route('employees.edit', $employee),
+                                'destroy' => route('employees.destroy', $employee),
+                                'deleteConfirm' => 'Weet je zeker dat je deze medewerker wilt verwijderen?'
+                            ])
                         </td>
                     </tr>
                 @empty

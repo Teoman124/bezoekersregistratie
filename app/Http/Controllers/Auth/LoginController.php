@@ -41,6 +41,10 @@ class LoginController extends Controller
 
         $request->session()->regenerate();
 
+        if (auth()->user()->role === 'visitor') {
+            return redirect()->intended(route('visits.myvisits', absolute: false));
+        }
+
         return redirect()->intended(route('dashboard', absolute: false))->with('success', 'Je bent succesvol ingelogd!');
     }
 
@@ -75,7 +79,7 @@ class LoginController extends Controller
         RateLimiter::clear($this->visitorThrottleKey($request));
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        return redirect()->intended(route('visits.myvisits', absolute: false));
     }
 
     public function destroy(Request $request): RedirectResponse

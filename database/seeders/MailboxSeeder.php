@@ -52,11 +52,10 @@ class MailboxSeeder extends Seeder
             MailboxMessage::create([
                 'recipient_id' => $user->id,
                 'sender_id' => $sender->id,
-                'title' => 'Bericht van ' . $sender->name,
-                'message' => 'Hallo ' . $user->name . ', dit is een automatisch gegenereerd bericht.',
+                'title' => 'Bericht van '.$sender->name,
+                'message' => 'Hallo '.$user->name.', dit is een automatisch gegenereerd bericht.',
                 'read' => false,
             ]);
         }
     }
 }
-

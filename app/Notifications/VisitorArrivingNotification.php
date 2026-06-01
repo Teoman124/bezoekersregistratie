@@ -11,8 +11,7 @@ class VisitorArrivingNotification extends Notification
     public function __construct(
         public Visit $visit,
         public string $type = 'reminder',
-    ) {
-    }
+    ) {}
 
     public function subject(): string
     {
