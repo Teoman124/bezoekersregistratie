@@ -25,7 +25,7 @@ class DatabaseSeeder extends Seeder
         );
 
         $employee1User = User::firstOrCreate(
-            ['email' => 'employee@example.com'],
+            ['email' => 'employee1@example.com'],
             [
                 'name' => 'Employee User',
                 'password' => bcrypt('password'),
@@ -55,6 +55,15 @@ class DatabaseSeeder extends Seeder
             ['email' => 'maria@external.com'],
             [
                 'name' => 'Maria Garcia',
+                'password' => bcrypt('password'),
+                'role' => 'visitor',
+            ]
+        );
+
+        User::firstOrCreate(
+            ['email' => 'welcome@example.com'],
+            [
+                'name' => 'Welcome Demo',
                 'password' => bcrypt('password'),
                 'role' => 'visitor',
             ]
@@ -169,6 +178,6 @@ class DatabaseSeeder extends Seeder
         );
 
         // Mailbox sample data
-        $this->call(\Database\Seeders\MailboxSeeder::class);
+        $this->call(MailboxSeeder::class);
     }
 }

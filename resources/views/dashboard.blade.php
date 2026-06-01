@@ -91,6 +91,14 @@
             <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
                 {{ __('Je bent ingelogd als visitor. Beheerfuncties zoals bezoekers, bezoeken, afdelingen en notificaties zijn niet beschikbaar.') }}
             </p>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                {{ __('Wil je een afspraak maken? Stuur dan een bericht via de mailbox naar de medewerker.') }}
+            </p>
+            <div class="mt-4">
+                <a href="{{ route('mailbox.create') }}" class="inline-flex items-center px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white">
+                    {{ __('Afspraak aanvragen') }}
+                </a>
+            </p>
         </div>
     @endif
 

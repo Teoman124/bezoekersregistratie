@@ -6,6 +6,7 @@ use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Models\Employee;
 use App\Models\User;
+use App\Services\WelcomeMessageService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -51,7 +52,7 @@ class UserController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreUserRequest $request)
+    public function store(StoreUserRequest $request, WelcomeMessageService $welcomeMessageService)
     {
         $this->ensureAdmin();
 
@@ -60,7 +61,9 @@ class UserController extends Controller
         // ✅ Password hashing
         $validatedData['password'] = Hash::make($validatedData['password']);
 
-        User::create($validatedData);
+        $user = User::create($validatedData);
+
+        $welcomeMessageService->send($user, $request->user());
 
         return redirect()->route('users.index')
             ->with('success', 'User created successfully.');

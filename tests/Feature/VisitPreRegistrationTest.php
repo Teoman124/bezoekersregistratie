@@ -14,13 +14,17 @@ use App\Models\Employee;
 use App\Models\User;
 use App\Models\Visit;
 use App\Models\Visitor;
+use App\Services\MailtrapApiService;
 use Illuminate\Support\Facades\Auth;
 
 function preRegistrationHostEmployee(): Employee
 {
     $department = Department::create(['name' => 'Sales']);
 
-    $hostUser = User::factory()->create(['name' => 'Lisa Medewerker']);
+    $hostUser = User::factory()->create([
+        'name' => 'Lisa Medewerker',
+        'email' => 'lisa@example.com',
+    ]);
 
     return Employee::create([
         'user_id' => $hostUser->id,
@@ -107,6 +111,38 @@ test('vooraf aangemeld bezoek verschijnt in het bezoekersoverzicht', function ()
     ]);
 
     $this->get(route('visits.index'))->assertSuccessful();
+
+    expect(Visit::count())->toBe(1);
+});
+
+test('het boeken van een bezoek verstuurt een bevestiging naar de bezoeker', function () {
+    $employee = preRegistrationHostEmployee();
+    $visitorUser = User::factory()->create([
+        'name' => 'Tom Bezoeker',
+        'email' => 'tom@example.com',
+    ]);
+
+    $visitor = Visitor::create(['user_id' => $visitorUser->id]);
+
+    $this->mock(MailtrapApiService::class, function ($mock) {
+        $mock->shouldReceive('send')
+            ->twice()
+            ->withArgs(function (string $toEmail, string $subject, string $text, ?string $html = null): bool {
+                return in_array($toEmail, ['tom@example.com', 'lisa@example.com'], true)
+                    && in_array($subject, ['Bevestiging van je bezoek', 'Nieuwe afspraak ingepland'], true)
+                    && str_contains($text, 'Tom Bezoeker')
+                    && str_contains($text, 'Lisa Medewerker')
+                    && $html !== null;
+            })
+            ->andReturnTrue();
+    });
+
+    $this->post(route('visits.store'), [
+        'visitor_id' => $visitor->id,
+        'host_employee_id' => $employee->id,
+        'reason_of_visit' => 'Kennismaking',
+        'expected_arrival_time' => now()->addDay()->format('Y-m-d H:i:s'),
+    ])->assertRedirect(route('visits.index'));
 
     expect(Visit::count())->toBe(1);
 });

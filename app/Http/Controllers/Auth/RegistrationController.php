@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\WelcomeMessageService;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -20,7 +21,7 @@ class RegistrationController extends Controller
         return view('auth.register');
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, WelcomeMessageService $welcomeMessageService): RedirectResponse
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -31,7 +32,11 @@ class RegistrationController extends Controller
         $validated['password'] = Hash::make($validated['password']);
         $validated['role'] = 'visitor'; // Geef de nieuwe gebruiker een standaard rol
 
-        event(new Registered(($user = User::create($validated))));
+        $user = User::create($validated);
+
+        event(new Registered($user));
+
+        $welcomeMessageService->send($user);
 
         Auth::login($user);
 
@@ -43,7 +48,7 @@ class RegistrationController extends Controller
         return view('auth.visitor-register');
     }
 
-    public function storeVisitor(Request $request): RedirectResponse
+    public function storeVisitor(Request $request, WelcomeMessageService $welcomeMessageService): RedirectResponse
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255', 'unique:'.User::class.',name'],
@@ -57,6 +62,7 @@ class RegistrationController extends Controller
         ]);
 
         event(new Registered($user));
+        $welcomeMessageService->send($user);
         Auth::login($user);
 
         return redirect(route('visitor.company-info', absolute: false));

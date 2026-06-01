@@ -10,10 +10,17 @@
 // ✅ Gebruiker bewerken (rol aanpassen)
 // ✅ Gebruiker verwijderen
 
+use App\Mail\WelcomeToBezoekersregistratieMail;
+use App\Models\MailboxMessage;
 use App\Models\User;
+use Illuminate\Support\Facades\Mail;
 
 // ✅ SLAAGT — nieuwe gebruiker wordt aangemaakt met de juiste rol
 test('beheerder kan een nieuwe gebruiker aanmaken met een rol', function () {
+    $this->actingAs(User::factory()->create(['role' => 'admin']));
+
+    Mail::fake();
+
     $this->post(route('users.store'), [
         'name' => 'Sophie Receptionist',
         'email' => 'sophie@example.com',
@@ -26,10 +33,22 @@ test('beheerder kan een nieuwe gebruiker aanmaken met een rol', function () {
 
     expect($user)->not->toBeNull();
     expect($user->role)->toBe('visitor');
+
+    Mail::assertSent(WelcomeToBezoekersregistratieMail::class, function (WelcomeToBezoekersregistratieMail $mail): bool {
+        return $mail->hasTo('sophie@example.com')
+            && str_contains($mail->render(), 'Welcome to Bezoekersregistratie, Sophie Receptionist')
+            && str_contains($mail->render(), 'Bezoekersregistratie team');
+    });
+
+    expect(MailboxMessage::where('recipient_id', $user->id)->where('title', 'Account successfully made')->exists())->toBeTrue();
 });
 
 // ✅ SLAAGT — rollen employee en admin zijn ook geldig bij aanmaken
 test('beheerder kan gebruikers aanmaken met verschillende rollen', function (string $role) {
+    $this->actingAs(User::factory()->create(['role' => 'admin']));
+
+    Mail::fake();
+
     $this->post(route('users.store'), [
         'name' => 'Test Gebruiker',
         'email' => "test_{$role}@example.com",
@@ -39,10 +58,20 @@ test('beheerder kan gebruikers aanmaken met verschillende rollen', function (str
     ])->assertRedirect(route('users.index'));
 
     expect(User::where('role', $role)->exists())->toBeTrue();
+
+    Mail::assertSent(WelcomeToBezoekersregistratieMail::class, function (WelcomeToBezoekersregistratieMail $mail) use ($role): bool {
+        return $mail->hasTo("test_{$role}@example.com");
+    });
+
+    $createdUserId = User::where('email', "test_{$role}@example.com")->value('id');
+
+    expect(MailboxMessage::where('recipient_id', $createdUserId)->where('title', 'Account successfully made')->exists())->toBeTrue();
 })->with(['admin', 'employee', 'visitor']);
 
 // ✅ SLAAGT — bestaande gebruiker kan worden verwijderd
 test('beheerder kan een gebruiker verwijderen', function () {
+    $this->actingAs(User::factory()->create(['role' => 'admin']));
+
     $user = User::factory()->create(['role' => 'visitor']);
 
     $this->delete(route('users.destroy', $user))

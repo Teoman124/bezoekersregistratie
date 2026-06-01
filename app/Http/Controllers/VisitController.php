@@ -8,6 +8,7 @@ use App\Models\Employee;
 use App\Models\Notification;
 use App\Models\Visit;
 use App\Models\Visitor;
+use App\Services\MailtrapApiService;
 use Illuminate\Http\Request;
 
 class VisitController extends Controller
@@ -86,44 +87,44 @@ class VisitController extends Controller
     }
 
     public function myVisits(Request $request)
-{
-    $user = $request->user();
+    {
+        $user = $request->user();
 
-    $query = Visit::with(['visitor.user', 'employee.user'])
-        ->where(function ($q) use ($user) {
+        $query = Visit::with(['visitor.user', 'employee.user'])
+            ->where(function ($q) use ($user) {
 
-            // visitor ownership
-            if ($user->visitor) {
-                $q->orWhere('visitor_id', $user->visitor->id);
+                // visitor ownership
+                if ($user->visitor) {
+                    $q->orWhere('visitor_id', $user->visitor->id);
+                }
+
+                // employee ownership
+                if ($user->employee) {
+                    $q->orWhere('host_employee_id', $user->employee->id);
+                }
+
+                // optional: direct user link (als je dat gebruikt in DB)
+                $q->orWhere('user_id', $user->id);
+            });
+
+        if ($request->filled('status')) {
+            if ($request->status === 'planned') {
+                $query->whereNull('check_in_time');
             }
 
-            // employee ownership
-            if ($user->employee) {
-                $q->orWhere('host_employee_id', $user->employee->id);
+            if ($request->status === 'in') {
+                $query->active();
             }
 
-            // optional: direct user link (als je dat gebruikt in DB)
-            $q->orWhere('user_id', $user->id);
-        });
-
-    if ($request->filled('status')) {
-        if ($request->status === 'planned') {
-            $query->whereNull('check_in_time');
+            if ($request->status === 'out') {
+                $query->whereNotNull('check_out_time');
+            }
         }
 
-        if ($request->status === 'in') {
-            $query->active();
-        }
+        $visits = $query->latest('expected_arrival_time')->get();
 
-        if ($request->status === 'out') {
-            $query->whereNotNull('check_out_time');
-        }
+        return view('visits.MyVisits', compact('visits'));
     }
-
-    $visits = $query->latest('expected_arrival_time')->get();
-
-    return view('visits.MyVisits', compact('visits'));
-}
 
     public function create()
     {
@@ -133,7 +134,7 @@ class VisitController extends Controller
         return view('visits.create', compact('employees', 'visitors'));
     }
 
-    public function store(StoreVisitRequest $request)
+    public function store(StoreVisitRequest $request, MailtrapApiService $mailtrapApiService)
     {
         $validated = $request->validated();
         $status = $validated['status'] ?? 'planned';
@@ -155,7 +156,59 @@ class VisitController extends Controller
             $validated['check_out_time'] = now();
         }
 
-        Visit::create($validated);
+        $visit = Visit::create($validated);
+        $visit->load(['visitor.user', 'employee.user']);
+
+        $visitor = $visit->visitor?->user;
+        $employee = $visit->employee?->user;
+        $visitorName = $visitor?->name ?? 'Bezoeker';
+        $employeeName = $employee?->name ?? 'de gastheer';
+        $arrivalTime = $visit->expected_arrival_time?->format('d-m-Y H:i') ?? 'onbekend';
+        $departureTime = $visit->expected_departure_time?->format('d-m-Y H:i');
+
+        $recipientMails = [
+            [
+                'email' => $visitor?->email,
+                'subject' => 'Bevestiging van je bezoek',
+                'text' => "Hallo {$visitorName},\n\nJe bezoek is ingepland bij {$employeeName}.\nVerwachte aankomst: {$arrivalTime}.",
+                'html' => '<p>Hallo '.e($visitorName).',</p>'
+                    .'<p>Je bezoek is ingepland bij '.e($employeeName).'.</p>'
+                    .'<p><strong>Verwachte aankomst:</strong> '.e($arrivalTime).'</p>',
+            ],
+            [
+                'email' => $employee?->email,
+                'subject' => 'Nieuwe afspraak ingepland',
+                'text' => "Hallo {$employeeName},\n\nEr is een bezoek ingepland door {$visitorName}.\nVerwachte aankomst: {$arrivalTime}.",
+                'html' => '<p>Hallo '.e($employeeName).',</p>'
+                    .'<p>Er is een bezoek ingepland door '.e($visitorName).'.</p>'
+                    .'<p><strong>Verwachte aankomst:</strong> '.e($arrivalTime).'</p>',
+            ],
+        ];
+
+        if ($departureTime) {
+            foreach ($recipientMails as &$recipientMail) {
+                $recipientMail['text'] .= "\nVerwacht vertrek: {$departureTime}.";
+                $recipientMail['html'] .= '<p><strong>Verwacht vertrek:</strong> '.e($departureTime).'</p>';
+            }
+
+            unset($recipientMail);
+        }
+
+        foreach ($recipientMails as $recipientMail) {
+            if (blank($recipientMail['email'])) {
+                continue;
+            }
+
+            $recipientMail['text'] .= "\n\nTot snel.";
+            $recipientMail['html'] .= '<p>Tot snel.</p>';
+
+            $mailtrapApiService->send(
+                $recipientMail['email'],
+                $recipientMail['subject'],
+                $recipientMail['text'],
+                $recipientMail['html'],
+            );
+        }
 
         return redirect()->route('visits.index')
             ->with('success', 'Visit created successfully.');
@@ -232,7 +285,7 @@ class VisitController extends Controller
             Notification::create([
                 'user_id' => $visit->employee->user_id,
                 'title' => 'Bezoeker ingecheckt',
-                'message' => 'Je bezoeker ' . $visit->visitor->user->name . ' is aangekomen.',
+                'message' => 'Je bezoeker '.$visit->visitor->user->name.' is aangekomen.',
             ]);
         }
 
@@ -242,7 +295,7 @@ class VisitController extends Controller
     public function checkOut(Visit $visit)
     {
         // eerst ingecheckt?
-        if (!$visit->check_in_time) {
+        if (! $visit->check_in_time) {
             return back()->with('error', 'Visitor has not checked in yet.');
         }
 

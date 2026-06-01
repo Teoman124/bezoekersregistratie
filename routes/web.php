@@ -1,7 +1,7 @@
 <?php
 
-use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Api\NotificationController as ApiNotificationController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\MailboxController;
@@ -11,8 +11,6 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\VisitController;
 use App\Http\Controllers\VisitorController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Middleware\Checkrole;
-
 
 Route::get('/', [DashboardController::class, 'index'])->middleware(['auth', 'check.role:admin,employee']);
 Route::get('dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
@@ -28,17 +26,15 @@ Route::middleware(['auth'])->group(function () {
 });
 
 Route::get('/Visits/my', [VisitController::class, 'myvisits'])
-    ->middleware(['auth', 'check.role:employee,visitor' ])
+    ->middleware(['auth', 'check.role:employee,admin'])
     ->name('visits.myvisits');
 Route::get('/Visits/history', [VisitController::class, 'history'])
     ->middleware(['auth', 'check.role:admin,employee'])
     ->name('visits.history');
 Route::get('/Visits/{visit}', [VisitController::class, 'show'])
+    ->whereNumber('visit')
     ->name('visits.show')
-    ->middleware(['auth', 'check.role:admin,employee,visitor']);
-
-
-
+    ->middleware(['auth', 'check.role:admin,employee']);
 
 Route::middleware(['auth', 'check.role:admin,employee'])->group(function () {
     // Bezoeken
@@ -46,7 +42,6 @@ Route::middleware(['auth', 'check.role:admin,employee'])->group(function () {
     Route::get('/Visits/active', [VisitController::class, 'active'])->name('visits.active');
     Route::get('/Visits/create', [VisitController::class, 'create'])->name('visits.create');
     Route::post('/Visits', [VisitController::class, 'store'])->name('visits.store');
-    Route::get('/Visits/{visit}', [VisitController::class, 'show'])->name('visits.show');
     Route::get('/Visits/{visit}/edit', [VisitController::class, 'edit'])->name('visits.edit');
     Route::put('/Visits/{visit}', [VisitController::class, 'update'])->name('visits.update');
     Route::delete('/Visits/{visit}', [VisitController::class, 'destroy'])->name('visits.destroy');
@@ -54,7 +49,7 @@ Route::middleware(['auth', 'check.role:admin,employee'])->group(function () {
     Route::get('/Visits/checkout/{visit}', [VisitController::class, 'checkOut'])->name('visits.checkout');
 });
 // Medewerkers
-Route::middleware(['auth', 'check.role:admin',])->group(function () {
+Route::middleware(['auth', 'check.role:admin'])->group(function () {
     Route::get('/Employees', [EmployeeController::class, 'index'])->name('employees.index');
     Route::get('/Employees/create', [EmployeeController::class, 'create'])->name('employees.create');
     Route::post('/Employees', [EmployeeController::class, 'store'])->name('employees.store');
@@ -114,8 +109,8 @@ Route::middleware(['auth:sanctum'])->prefix('api')->group(function () {
     Route::delete('/notifications', [ApiNotificationController::class, 'destroyAll'])->name('api.notifications.destroy-all');
 });
 
- // Mailbox
-Route::middleware(['auth', 'check.role:admin,employee'])->group(function () {
+// Mailbox
+Route::middleware(['auth', 'check.role:admin,employee,visitor'])->group(function () {
     Route::get('/Mailbox', [MailboxController::class, 'index'])->name('mailbox.index');
     Route::get('/Mailbox/create', [MailboxController::class, 'create'])->name('mailbox.create');
     Route::post('/Mailbox', [MailboxController::class, 'store'])->name('mailbox.store');

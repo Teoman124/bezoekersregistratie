@@ -70,6 +70,24 @@ test('mailbox create page opens for authenticated users', function () {
     $response->assertStatus(200);
 });
 
+test('mailbox is accessible to visitors', function () {
+    $visitor = User::factory()->create(['role' => 'visitor']);
+
+    $response = $this->actingAs($visitor)->get(route('mailbox.index'));
+
+    $response->assertOk();
+    $response->assertSee('Mailbox');
+});
+
+test('visitor can see mailbox link in sidebar', function () {
+    $visitor = User::factory()->create(['role' => 'visitor']);
+
+    $response = $this->actingAs($visitor)->get(route('dashboard'));
+
+    $response->assertOk();
+    $response->assertSee('Mailbox');
+});
+
 test('mailbox store creates a message for the selected user', function () {
     $sender = User::factory()->create();
     $recipient = User::factory()->create();
