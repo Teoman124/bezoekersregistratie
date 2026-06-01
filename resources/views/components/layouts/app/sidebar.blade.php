@@ -29,7 +29,7 @@
                         :active="request()->routeIs('visitors.*')">Bezoekers</x-layouts.sidebar-link>
 
                     <x-layouts.sidebar-link href="{{ route('visits.index') }}" icon='fas-calendar-check'
-                        :active="request()->routeIs('visits.*')">Bezoeken</x-layouts.sidebar-link>
+                        :active="request()->routeIs('visits.index')">Bezoeken</x-layouts.sidebar-link>
 
                     <x-layouts.sidebar-link href="{{ route('mailbox.index') }}" icon='fas-inbox'
                         :active="request()->routeIs('mailbox.*')">Mailbox</x-layouts.sidebar-link>
