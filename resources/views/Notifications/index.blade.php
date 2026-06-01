@@ -34,8 +34,8 @@
                             <div class="flex flex-wrap gap-2 items-center">
                                 @include('components.action-buttons', [
                                     'show' => route('notifications.show', $notification),
-                                    'edit' => route('notifications.edit', $notification),
-                                    'destroy' => route('notifications.destroy', $notification),
+                                    'edit' => auth()->user()?->role === 'admin' ? route('notifications.edit', $notification) : null,
+                                    'destroy' => auth()->user()?->role === 'admin' ? route('notifications.destroy', $notification) : null,
                                     'deleteConfirm' => 'Weet je zeker dat je deze notificatie wilt verwijderen?'
                                 ])
 

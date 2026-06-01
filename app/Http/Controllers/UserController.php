@@ -12,9 +12,14 @@ use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
-    protected function ensureAdmin(): void
+    protected function ensureUserViewer(): void
     {
         abort_unless(in_array(auth()->user()?->role, ['admin', 'employee'], true), 403);
+    }
+
+    protected function ensureUserManager(): void
+    {
+        abort_unless(auth()->user()?->role === 'admin', 403);
     }
 
     /**
@@ -22,7 +27,7 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        $this->ensureAdmin();
+        $this->ensureUserViewer();
 
         $query = User::query();
 
@@ -44,7 +49,7 @@ class UserController extends Controller
      */
     public function create()
     {
-        $this->ensureAdmin();
+        $this->ensureUserManager();
 
         return view('users.create');
     }
@@ -54,7 +59,7 @@ class UserController extends Controller
      */
     public function store(StoreUserRequest $request, WelcomeMessageService $welcomeMessageService)
     {
-        $this->ensureAdmin();
+        $this->ensureUserManager();
 
         $validatedData = $request->validated();
 
@@ -74,7 +79,7 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        $this->ensureAdmin();
+        $this->ensureUserViewer();
 
         $user = User::findOrFail($user->id);
 
@@ -86,7 +91,7 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
-        $this->ensureAdmin();
+        $this->ensureUserManager();
 
         return view('users.edit', compact('user'));
     }
@@ -96,7 +101,7 @@ class UserController extends Controller
      */
     public function update(UpdateUserRequest $request, User $user)
     {
-        $this->ensureAdmin();
+        $this->ensureUserManager();
 
         $user = User::findOrFail($user->id);
 
@@ -136,7 +141,7 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
-        $this->ensureAdmin();
+        $this->ensureUserManager();
 
         $user->delete();
 

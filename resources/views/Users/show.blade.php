@@ -8,8 +8,10 @@
             <div class="flex gap-3">
                 <a href="{{ route('mailbox.create', ['to' => $user->id]) }}"
                     class="px-4 py-2 rounded-md border border-gray-300 dark:border-gray-700">Mail sturen</a>
-                <a href="{{ route('users.edit', $user) }}"
-                    class="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white">Bewerken</a>
+                @if(auth()->user()?->role === 'admin')
+                    <a href="{{ route('users.edit', $user) }}"
+                        class="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white">Bewerken</a>
+                @endif
             </div>
         </div>
 

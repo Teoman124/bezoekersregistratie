@@ -8,6 +8,11 @@ use App\Models\User;
 
 class NotificationController extends Controller
 {
+    protected function ensureNotificationManager(): void
+    {
+        abort_unless(auth()->user()?->role === 'admin', 403);
+    }
+
     public function index()
     {
         $notifications = Notification::with('user')->latest()->get();
@@ -31,6 +36,8 @@ class NotificationController extends Controller
 
     public function edit(Notification $notification)
     {
+        $this->ensureNotificationManager();
+
         $users = User::all();
 
         return view('notifications.edit', compact('notification', 'users'));
@@ -38,6 +45,8 @@ class NotificationController extends Controller
 
     public function update(UpdateNotificationRequest $request, Notification $notification)
     {
+        $this->ensureNotificationManager();
+
         $validated = $request->validated();
         $validated['read'] = $request->boolean('read');
 
@@ -49,6 +58,8 @@ class NotificationController extends Controller
 
     public function destroy(Notification $notification)
     {
+        $this->ensureNotificationManager();
+
         $notification->delete();
 
         return back();

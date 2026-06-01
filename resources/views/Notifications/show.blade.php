@@ -5,7 +5,9 @@
                 <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Notificatie details</h1>
                 <p class="text-sm text-gray-600 dark:text-gray-400">Bekijk de inhoud en status van deze notificatie.</p>
             </div>
-            <a href="{{ route('notifications.edit', $notification) }}" class="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white">Bewerken</a>
+            @if(auth()->user()?->role === 'admin')
+                <a href="{{ route('notifications.edit', $notification) }}" class="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white">Bewerken</a>
+            @endif
         </div>
 
         <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 space-y-4">

@@ -78,9 +78,12 @@ Route::middleware(['auth', 'check.role:admin'])->group(function () {
 // Gebruikers
 Route::middleware(['auth', 'check.role:admin,employee'])->group(function () {
     Route::get('/Users', [UserController::class, 'index'])->name('users.index');
+    Route::get('/Users/{user}', [UserController::class, 'show'])->name('users.show');
+});
+
+Route::middleware(['auth', 'check.role:admin'])->group(function () {
     Route::get('/Users/create', [UserController::class, 'create'])->name('users.create');
     Route::post('/Users', [UserController::class, 'store'])->name('users.store');
-    Route::get('/Users/{user}', [UserController::class, 'show'])->name('users.show');
     Route::get('/Users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
     Route::put('/Users/{user}', [UserController::class, 'update'])->name('users.update');
     Route::delete('/Users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
@@ -99,9 +102,12 @@ Route::middleware(['auth', 'check.role:admin,employee'])->group(function () {
 Route::middleware(['auth', 'check.role:admin,employee,visitor'])->group(function () {
     Route::get('/Notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::get('/Notifications/{notification}', [NotificationController::class, 'show'])->name('notifications.show');
+    Route::post('/Notifications/{notification}/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
+});
+
+Route::middleware(['auth', 'check.role:admin'])->group(function () {
     Route::get('/Notifications/{notification}/edit', [NotificationController::class, 'edit'])->name('notifications.edit');
     Route::put('/Notifications/{notification}', [NotificationController::class, 'update'])->name('notifications.update');
-    Route::post('/Notifications/{notification}/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
     Route::delete('/Notifications/{notification}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
 });
 
