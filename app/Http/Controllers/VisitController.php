@@ -10,9 +10,62 @@ use App\Models\Visit;
 use App\Models\Visitor;
 use App\Services\MailtrapApiService;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class VisitController extends Controller
 {
+    public function export(): StreamedResponse
+    {
+        $fileName = 'bezoekers-historie-'.now()->format('Y-m-d_His').'.csv';
+
+        $visits = Visit::query()
+            ->with(['visitor.user', 'employee.user', 'employee.department'])
+            ->orderByDesc('expected_arrival_time')
+            ->get();
+
+        return response()->streamDownload(function () use ($visits): void {
+            $output = fopen('php://output', 'wb');
+
+            fwrite($output, "\xEF\xBB\xBF");
+
+            fputcsv($output, [
+                'Datum',
+                'Bezoeker',
+                'Bezoeker e-mail',
+                'Bedrijf',
+                'Medewerker',
+                'Afdeling',
+                'Reden',
+                'Verwachte aankomst',
+                'Werkelijke aankomst',
+                'Verwacht vertrek',
+                'Werkelijke vertrek',
+                'Status',
+            ]);
+
+            foreach ($visits as $visit) {
+                fputcsv($output, [
+                    $visit->expected_arrival_time?->format('Y-m-d'),
+                    $visit->visitor?->user?->name ?? '-',
+                    $visit->visitor?->user?->email ?? '-',
+                    $visit->visitor?->company_name ?? '-',
+                    $visit->employee?->user?->name ?? '-',
+                    $visit->employee?->department?->name ?? '-',
+                    $visit->reason_of_visit ?: '-',
+                    $visit->expected_arrival_time?->format('Y-m-d H:i:s') ?? '-',
+                    $visit->check_in_time?->format('Y-m-d H:i:s') ?? '-',
+                    $visit->expected_departure_time?->format('Y-m-d H:i:s') ?? '-',
+                    $visit->check_out_time?->format('Y-m-d H:i:s') ?? '-',
+                    $visit->currentStatus(),
+                ]);
+            }
+
+            fclose($output);
+        }, $fileName, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+        ]);
+    }
+
     public function index(Request $request)
     {
         $query = Visit::with(['visitor.user', 'employee.user']);

@@ -4,9 +4,17 @@
             <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Bezoeken</h1>
             <p class="text-sm text-gray-600 dark:text-gray-400">Overzicht van alle ingeplande en afgeronde bezoeken.</p>
         </div>
-        <a href="{{ route('visits.create') }}" class="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white">
-            Nieuw bezoek
-        </a>
+        <div class="flex flex-wrap gap-2">
+            <a href="{{ route('visits.history') }}" class="px-4 py-2 rounded-md bg-slate-600 hover:bg-slate-700 text-white">
+                Bezoekgeschiedenis
+            </a>
+            <a href="{{ route('visits.export') }}" class="px-4 py-2 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white">
+                Export CSV
+            </a>
+            <a href="{{ route('visits.create') }}" class="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white">
+                Nieuw bezoek
+            </a>
+        </div>
     </div>
 
     <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
