@@ -4,7 +4,12 @@
             <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Bezoekgeschiedenis</h1>
             <p class="text-sm text-gray-600 dark:text-gray-400">Zoeken en filteren van alle eerdere bezoeken.</p>
         </div>
-        <a href="{{ route('visits.index') }}" class="px-4 py-2 rounded-md bg-slate-600 hover:bg-slate-700 text-white">Actieve bezoeken</a>
+        <div class="flex flex-wrap gap-2">
+            <a href="{{ route('visits.export') }}"
+                class="px-4 py-2 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white">Export CSV</a>
+            <a href="{{ route('visits.index') }}"
+                class="px-4 py-2 rounded-md bg-slate-600 hover:bg-slate-700 text-white">Actieve bezoeken</a>
+        </div>
     </div>
 
     <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">

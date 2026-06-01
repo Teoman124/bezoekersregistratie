@@ -34,6 +34,9 @@ Route::get('/Visits/my', [VisitController::class, 'myvisits'])
 Route::get('/Visits/history', [VisitController::class, 'history'])
     ->middleware(['auth', 'check.role:admin,employee'])
     ->name('visits.history');
+Route::get('/Visits/export', [VisitController::class, 'export'])
+    ->middleware(['auth', 'check.role:admin,employee'])
+    ->name('visits.export');
 Route::get('/Visits/{visit}', [VisitController::class, 'show'])
     ->whereNumber('visit')
     ->name('visits.show')
@@ -120,5 +123,5 @@ Route::middleware(['auth', 'check.role:admin,employee,visitor'])->group(function
     Route::get('/Mailbox/{mailboxMessage}', [MailboxController::class, 'show'])->name('mailbox.show');
     Route::delete('/Mailbox/{mailboxMessage}', [MailboxController::class, 'destroy'])->name('mailbox.destroy');
 });
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';
 // niet meer veranderen nu T_T
