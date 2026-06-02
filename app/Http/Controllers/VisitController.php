@@ -187,7 +187,7 @@ class VisitController extends Controller
         return view('visits.create', compact('employees', 'visitors'));
     }
 
-    public function store(StoreVisitRequest $request, MailtrapApiService $mailtrapApiService)
+    public function store(StoreVisitRequest $request)
     {
         $validated = $request->validated();
         $status = $validated['status'] ?? 'planned';
@@ -212,56 +212,8 @@ class VisitController extends Controller
         $visit = Visit::create($validated);
         $visit->load(['visitor.user', 'employee.user']);
 
-        $visitor = $visit->visitor?->user;
-        $employee = $visit->employee?->user;
-        $visitorName = $visitor?->name ?? 'Bezoeker';
-        $employeeName = $employee?->name ?? 'de gastheer';
-        $arrivalTime = $visit->expected_arrival_time?->format('d-m-Y H:i') ?? 'onbekend';
-        $departureTime = $visit->expected_departure_time?->format('d-m-Y H:i');
-
-        $recipientMails = [
-            [
-                'email' => $visitor?->email,
-                'subject' => 'Bevestiging van je bezoek',
-                'text' => "Hallo {$visitorName},\n\nJe bezoek is ingepland bij {$employeeName}.\nVerwachte aankomst: {$arrivalTime}.",
-                'html' => '<p>Hallo '.e($visitorName).',</p>'
-                    .'<p>Je bezoek is ingepland bij '.e($employeeName).'.</p>'
-                    .'<p><strong>Verwachte aankomst:</strong> '.e($arrivalTime).'</p>',
-            ],
-            [
-                'email' => $employee?->email,
-                'subject' => 'Nieuwe afspraak ingepland',
-                'text' => "Hallo {$employeeName},\n\nEr is een bezoek ingepland door {$visitorName}.\nVerwachte aankomst: {$arrivalTime}.",
-                'html' => '<p>Hallo '.e($employeeName).',</p>'
-                    .'<p>Er is een bezoek ingepland door '.e($visitorName).'.</p>'
-                    .'<p><strong>Verwachte aankomst:</strong> '.e($arrivalTime).'</p>',
-            ],
-        ];
-
-        if ($departureTime) {
-            foreach ($recipientMails as &$recipientMail) {
-                $recipientMail['text'] .= "\nVerwacht vertrek: {$departureTime}.";
-                $recipientMail['html'] .= '<p><strong>Verwacht vertrek:</strong> '.e($departureTime).'</p>';
-            }
-
-            unset($recipientMail);
-        }
-
-        foreach ($recipientMails as $recipientMail) {
-            if (blank($recipientMail['email'])) {
-                continue;
-            }
-
-            $recipientMail['text'] .= "\n\nTot snel.";
-            $recipientMail['html'] .= '<p>Tot snel.</p>';
-
-            $mailtrapApiService->send(
-                $recipientMail['email'],
-                $recipientMail['subject'],
-                $recipientMail['text'],
-                $recipientMail['html'],
-            );
-        }
+        $mailtrapApiService = app(MailtrapApiService::class);
+        $this->sendMail($visit, $mailtrapApiService);
 
         return redirect()->route('visits.index')
             ->with('success', 'Visit created successfully.');
@@ -362,5 +314,59 @@ class VisitController extends Controller
         ]);
 
         return back()->with('success', 'Visitor checked out.');
+    }
+
+    private function sendMail($visit, MailtrapApiService $mailtrapApiService): void
+    {
+          $visitor = $visit->visitor?->user;
+        $employee = $visit->employee?->user;
+        $visitorName = $visitor?->name ?? 'Bezoeker';
+        $employeeName = $employee?->name ?? 'de gastheer';
+        $arrivalTime = $visit->expected_arrival_time?->format('d-m-Y H:i') ?? 'onbekend';
+        $departureTime = $visit->expected_departure_time?->format('d-m-Y H:i');
+
+        $recipientMails = [
+            [
+                'email' => $visitor?->email,
+                'subject' => 'Bevestiging van je bezoek',
+                'text' => "Hallo {$visitorName},\n\nJe bezoek is ingepland bij {$employeeName}.\nVerwachte aankomst: {$arrivalTime}.",
+                'html' => '<p>Hallo '.e($visitorName).',</p>'
+                    .'<p>Je bezoek is ingepland bij '.e($employeeName).'.</p>'
+                    .'<p><strong>Verwachte aankomst:</strong> '.e($arrivalTime).'</p>',
+            ],
+            [
+                'email' => $employee?->email,
+                'subject' => 'Nieuwe afspraak ingepland',
+                'text' => "Hallo {$employeeName},\n\nEr is een bezoek ingepland door {$visitorName}.\nVerwachte aankomst: {$arrivalTime}.",
+                'html' => '<p>Hallo '.e($employeeName).',</p>'
+                    .'<p>Er is een bezoek ingepland door '.e($visitorName).'.</p>'
+                    .'<p><strong>Verwachte aankomst:</strong> '.e($arrivalTime).'</p>',
+            ],
+        ];
+
+        if ($departureTime) {
+            foreach ($recipientMails as &$recipientMail) {
+                $recipientMail['text'] .= "\nVerwacht vertrek: {$departureTime}.";
+                $recipientMail['html'] .= '<p><strong>Verwacht vertrek:</strong> '.e($departureTime).'</p>';
+            }
+
+            unset($recipientMail);
+        }
+
+        foreach ($recipientMails as $recipientMail) {
+            if (blank($recipientMail['email'])) {
+                continue;
+            }
+
+            $recipientMail['text'] .= "\n\nTot snel.";
+            $recipientMail['html'] .= '<p>Tot snel.</p>';
+
+            $mailtrapApiService->send(
+                $recipientMail['email'],
+                $recipientMail['subject'],
+                $recipientMail['text'],
+                $recipientMail['html'],
+            );
+        }
     }
 }
