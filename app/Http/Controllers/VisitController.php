@@ -10,13 +10,14 @@ use App\Models\Visit;
 use App\Models\Visitor;
 use App\Services\MailtrapApiService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\URL;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class VisitController extends Controller
 {
     public function export(): StreamedResponse
     {
-        $fileName = 'bezoekers-historie-'.now()->format('Y-m-d_His').'.csv';
+        $fileName = 'bezoekers-historie-' . now()->format('Y-m-d_His') . '.csv';
 
         $visits = Visit::query()
             ->with(['visitor.user', 'employee.user', 'employee.department'])
@@ -221,7 +222,41 @@ class VisitController extends Controller
 
     public function show(Visit $visit)
     {
-        return view('visits.show', compact('visit'));
+        $checkinQrUrl = null;
+
+        if (! $visit->check_in_time) {
+            $checkinQrUrl = URL::temporarySignedRoute(
+                'visits.checkin.qr',
+                now()->addHours(8),
+                ['visit' => $visit],
+            );
+        }
+
+        return view('visits.show', compact('visit', 'checkinQrUrl'));
+    }
+
+    public function checkInViaQr(Visit $visit)
+    {
+        if ($visit->check_in_time) {
+            return redirect()->route('visits.show', $visit)
+                ->with('error', 'Visitor is already checked in.');
+        }
+
+        $visit->update([
+            'check_in_time' => now(),
+            'check_out_time' => null,
+        ]);
+
+        if ($visit->employee && $visit->visitor && $visit->visitor->user) {
+            Notification::create([
+                'user_id' => $visit->employee->user_id,
+                'title' => 'Bezoeker ingecheckt',
+                'message' => 'Je bezoeker ' . $visit->visitor->user->name . ' is aangekomen.',
+            ]);
+        }
+
+        return redirect()->route('visits.show', $visit)
+            ->with('success', 'Visitor checked in via QR.');
     }
 
     public function edit(Visit $visit)
@@ -290,7 +325,7 @@ class VisitController extends Controller
             Notification::create([
                 'user_id' => $visit->employee->user_id,
                 'title' => 'Bezoeker ingecheckt',
-                'message' => 'Je bezoeker '.$visit->visitor->user->name.' is aangekomen.',
+                'message' => 'Je bezoeker ' . $visit->visitor->user->name . ' is aangekomen.',
             ]);
         }
 
@@ -318,7 +353,7 @@ class VisitController extends Controller
 
     private function sendMail($visit, MailtrapApiService $mailtrapApiService): void
     {
-          $visitor = $visit->visitor?->user;
+        $visitor = $visit->visitor?->user;
         $employee = $visit->employee?->user;
         $visitorName = $visitor?->name ?? 'Bezoeker';
         $employeeName = $employee?->name ?? 'de gastheer';
@@ -330,24 +365,24 @@ class VisitController extends Controller
                 'email' => $visitor?->email,
                 'subject' => 'Bevestiging van je bezoek',
                 'text' => "Hallo {$visitorName},\n\nJe bezoek is ingepland bij {$employeeName}.\nVerwachte aankomst: {$arrivalTime}.",
-                'html' => '<p>Hallo '.e($visitorName).',</p>'
-                    .'<p>Je bezoek is ingepland bij '.e($employeeName).'.</p>'
-                    .'<p><strong>Verwachte aankomst:</strong> '.e($arrivalTime).'</p>',
+                'html' => '<p>Hallo ' . e($visitorName) . ',</p>'
+                    . '<p>Je bezoek is ingepland bij ' . e($employeeName) . '.</p>'
+                    . '<p><strong>Verwachte aankomst:</strong> ' . e($arrivalTime) . '</p>',
             ],
             [
                 'email' => $employee?->email,
                 'subject' => 'Nieuwe afspraak ingepland',
                 'text' => "Hallo {$employeeName},\n\nEr is een bezoek ingepland door {$visitorName}.\nVerwachte aankomst: {$arrivalTime}.",
-                'html' => '<p>Hallo '.e($employeeName).',</p>'
-                    .'<p>Er is een bezoek ingepland door '.e($visitorName).'.</p>'
-                    .'<p><strong>Verwachte aankomst:</strong> '.e($arrivalTime).'</p>',
+                'html' => '<p>Hallo ' . e($employeeName) . ',</p>'
+                    . '<p>Er is een bezoek ingepland door ' . e($visitorName) . '.</p>'
+                    . '<p><strong>Verwachte aankomst:</strong> ' . e($arrivalTime) . '</p>',
             ],
         ];
 
         if ($departureTime) {
             foreach ($recipientMails as &$recipientMail) {
                 $recipientMail['text'] .= "\nVerwacht vertrek: {$departureTime}.";
-                $recipientMail['html'] .= '<p><strong>Verwacht vertrek:</strong> '.e($departureTime).'</p>';
+                $recipientMail['html'] .= '<p><strong>Verwacht vertrek:</strong> ' . e($departureTime) . '</p>';
             }
 
             unset($recipientMail);

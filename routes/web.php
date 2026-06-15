@@ -14,6 +14,10 @@ use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'home')->name('home');
 
+Route::get('/Visits/checkin/qr/{visit}', [VisitController::class, 'checkInViaQr'])
+    ->name('visits.checkin.qr')
+    ->middleware('signed');
+
 Route::get('dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified', 'check.role:admin,employee'])
     ->name('dashboard');
@@ -129,5 +133,5 @@ Route::middleware(['auth', 'check.role:admin,employee,visitor'])->group(function
     Route::get('/Mailbox/{mailboxMessage}', [MailboxController::class, 'show'])->name('mailbox.show');
     Route::delete('/Mailbox/{mailboxMessage}', [MailboxController::class, 'destroy'])->name('mailbox.destroy');
 });
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
 // niet meer veranderen nu T_T

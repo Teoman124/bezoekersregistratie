@@ -29,6 +29,10 @@ class ConfirmationController extends Controller
 
         $request->session()->put('auth.password_confirmed_at', time());
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        $default = $request->user()->role === 'visitor'
+            ? route('visits.myvisits', absolute: false)
+            : route('dashboard', absolute: false);
+
+        return redirect()->intended($default);
     }
 }

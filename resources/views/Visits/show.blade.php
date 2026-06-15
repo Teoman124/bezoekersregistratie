@@ -6,7 +6,7 @@
                 <p class="text-sm text-gray-600 dark:text-gray-400">Bekijk alle informatie van dit bezoek.</p>
             </div>
             @if(in_array(auth()->user()?->role, ['admin', 'employee'], true))
-                <a href="{{ route('visits.edit', $visit) }}" class="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white">Bewerken</a>
+            <a href="{{ route('visits.edit', $visit) }}" class="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white">Bewerken</a>
             @endif
         </div>
 
@@ -43,14 +43,97 @@
             </div>
         </div>
 
+        @if(! $visit->check_in_time && isset($checkinQrUrl))
+        <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 shadow-sm printable-badge">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Check-in badge</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Scan deze QR-code om dit bezoek snel in te checken, of druk de badge af.</p>
+                </div>
+                <button type="button" onclick="window.printBadge()"
+                    class="px-4 py-2 rounded-md bg-slate-600 hover:bg-slate-700 text-white text-sm">Afdrukken</button>
+            </div>
+
+            <div class="grid gap-4 lg:grid-cols-[auto_1fr] items-center">
+                <div class="bg-white p-4 rounded-lg border border-gray-200 dark:border-gray-700 mx-auto">
+                    <img id="qr-image" src="" alt="QR-code check-in badge" style="width:240px;height:240px;display:block;margin:0 auto;border-radius:6px;" />
+                </div>
+                <div class="space-y-4">
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Check-in link</p>
+                        <p class="text-xs break-words text-gray-700 dark:text-gray-200">{{ $checkinQrUrl }}</p>
+                    </div>
+                    <div class="rounded-lg bg-gray-50 dark:bg-gray-900 p-4 border border-gray-200 dark:border-gray-700">
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Bezoeker</p>
+                        <p class="font-semibold text-gray-800 dark:text-gray-100">{{ $visit->visitor?->user?->name ?? 'Onbekend' }}</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Medewerker</p>
+                        <p class="font-semibold text-gray-800 dark:text-gray-100">{{ $visit->employee?->user?->name ?? 'Onbekend' }}</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-3">Aankomst</p>
+                        <p class="text-gray-800 dark:text-gray-100">{{ $visit->expected_arrival_time?->format('d-m-Y H:i') ?? '-' }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endif
+
+        @if(! $visit->check_in_time && isset($checkinQrUrl))
+        <style>
+            @media print {
+                /* hide everything except the printable badge */
+                body * { visibility: hidden !important; }
+                .printable-badge, .printable-badge * { visibility: visible !important; }
+                .printable-badge { position: fixed !important; left: 0; top: 0; width: 100%; padding: 1rem; }
+                .printable-badge img { width: 240px !important; height: 240px !important; }
+            }
+        </style>
+
+        <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+        <script>
+            (function() {
+                try {
+                    const url = @json($checkinQrUrl);
+                    // generate a data url QR at 240x240 for reliable printing
+                    QRCode.toDataURL(url, { width: 240, margin: 1 }, function(err, dataUrl) {
+                        if (err) {
+                            console.error('QR generation error', err);
+                            return;
+                        }
+                        const img = document.getElementById('qr-image');
+                        if (img) img.src = dataUrl;
+                    });
+
+                    window.printBadge = function() {
+                        const img = document.getElementById('qr-image');
+                        const doPrint = () => window.print();
+
+                        if (!img) return doPrint();
+                        if (img.src && img.complete) return doPrint();
+
+                        const onLoad = () => {
+                            img.removeEventListener('load', onLoad);
+                            doPrint();
+                        };
+                        img.addEventListener('load', onLoad);
+                        setTimeout(() => {
+                            img.removeEventListener('load', onLoad);
+                            doPrint();
+                        }, 3000);
+                    };
+                } catch (e) {
+                    console.error(e);
+                }
+            })();
+        </script>
+        @endif
+
         <div class="flex gap-3">
             @if(in_array(auth()->user()?->role, ['admin'], true))
-                 <a href="{{ route('visits.index') }}" class="px-4 py-2 rounded-md border border-gray-300 dark:border-gray-700">Terug</a>
+            <a href="{{ route('visits.index') }}" class="px-4 py-2 rounded-md border border-gray-300 dark:border-gray-700">Terug</a>
             @endif
             @if(in_array(auth()->user()?->role, ['visitor', 'employee'], true))
-                 <a href="{{ route('visits.myvisits') }}" class="px-4 py-2 rounded-md border border-gray-300 dark:border-gray-700">Terug</a>
+            <a href="{{ route('visits.myvisits') }}" class="px-4 py-2 rounded-md border border-gray-300 dark:border-gray-700">Terug</a>
             @endif
-        @if(in_array(auth()->user()?->role, ['admin', 'employee'], true))
+            @if(in_array(auth()->user()?->role, ['admin', 'employee'], true))
             @if(!$visit->check_in_time)
             <form action="{{ route('visits.checkin', $visit) }}" method="POST">
                 @csrf
@@ -60,7 +143,7 @@
             @if($visit->check_in_time && !$visit->check_out_time)
             <a href="{{ route('visits.checkout', $visit) }}" class="px-4 py-2 rounded-md bg-amber-600 hover:bg-amber-700 text-white">Uitchecken</a>
             @endif
-        @endif
+            @endif
         </div>
     </div>
 </x-layouts.app>
