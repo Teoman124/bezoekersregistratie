@@ -44,7 +44,7 @@
         </div>
 
         @if(! $visit->check_in_time && isset($checkinQrUrl))
-        <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 shadow-sm printable-badge">
+        <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 shadow-sm printable-badge" data-qr-url="{{ $checkinQrUrl }}">
             <div class="flex items-center justify-between mb-4">
                 <div>
                     <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Check-in badge</h2>
@@ -56,7 +56,7 @@
 
             <div class="grid gap-4 lg:grid-cols-[auto_1fr] items-center">
                 <div class="bg-white p-4 rounded-lg border border-gray-200 dark:border-gray-700 mx-auto">
-                    <img id="qr-image" src="" alt="QR-code check-in badge" style="width:240px;height:240px;display:block;margin:0 auto;border-radius:6px;" />
+                    <img id="qr-image" src="" alt="QR-code check-in badge" class="w-80 h-80 block mx-auto rounded-lg" />
                 </div>
                 <div class="space-y-4">
                     <div>
@@ -79,50 +79,70 @@
         @if(! $visit->check_in_time && isset($checkinQrUrl))
         <style>
             @media print {
-                /* hide everything except the printable badge */
-                body * { visibility: hidden !important; }
-                .printable-badge, .printable-badge * { visibility: visible !important; }
-                .printable-badge { position: fixed !important; left: 0; top: 0; width: 100%; padding: 1rem; }
-                .printable-badge img { width: 240px !important; height: 240px !important; }
+                body * {
+                    visibility: hidden !important;
+                }
+
+                .printable-badge,
+                .printable-badge * {
+                    visibility: visible !important;
+                }
+
+                .printable-badge {
+                    position: fixed !important;
+                    left: 0;
+                    top: 0;
+                    width: 100%;
+                    padding: 1rem;
+                }
+
+                .printable-badge img {
+                    width: 320px !important;
+                    height: 320px !important;
+                }
             }
         </style>
 
         <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
         <script>
-            (function() {
-                try {
-                    const url = @json($checkinQrUrl);
-                    // generate a data url QR at 240x240 for reliable printing
-                    QRCode.toDataURL(url, { width: 240, margin: 1 }, function(err, dataUrl) {
+            document.addEventListener('DOMContentLoaded', function() {
+                const badgeContainer = document.querySelector('[data-qr-url]');
+                if (!badgeContainer) return;
+
+                const qrUrl = badgeContainer.dataset.qrUrl;
+                const qrImg = document.getElementById('qr-image');
+
+                if (qrImg && window.QRCode) {
+                    window.QRCode.toDataURL(qrUrl, {
+                        width: 320,
+                        margin: 1
+                    }, function(err, dataUrl) {
                         if (err) {
                             console.error('QR generation error', err);
                             return;
                         }
-                        const img = document.getElementById('qr-image');
-                        if (img) img.src = dataUrl;
+                        qrImg.src = dataUrl;
                     });
-
-                    window.printBadge = function() {
-                        const img = document.getElementById('qr-image');
-                        const doPrint = () => window.print();
-
-                        if (!img) return doPrint();
-                        if (img.src && img.complete) return doPrint();
-
-                        const onLoad = () => {
-                            img.removeEventListener('load', onLoad);
-                            doPrint();
-                        };
-                        img.addEventListener('load', onLoad);
-                        setTimeout(() => {
-                            img.removeEventListener('load', onLoad);
-                            doPrint();
-                        }, 3000);
-                    };
-                } catch (e) {
-                    console.error(e);
                 }
-            })();
+
+                window.printBadge = function() {
+                    const img = document.getElementById('qr-image');
+                    const doPrint = () => window.print();
+
+                    if (!img) return doPrint();
+                    if (img.src && img.complete) return doPrint();
+
+                    const onLoad = () => {
+                        img.removeEventListener('load', onLoad);
+                        doPrint();
+                    };
+                    img.addEventListener('load', onLoad);
+                    setTimeout(() => {
+                        img.removeEventListener('load', onLoad);
+                        doPrint();
+                    }, 3000);
+                };
+            });
         </script>
         @endif
 
