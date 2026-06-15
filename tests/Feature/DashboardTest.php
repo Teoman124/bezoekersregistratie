@@ -51,14 +51,26 @@ class DashboardTest extends TestCase
             'check_out_time' => Carbon::now()->subDay()->addMinutes(90),
         ]);
 
-        $this->actingAs($admin)
+        $response = $this->actingAs($admin)
             ->get('/dashboard')
             ->assertStatus(200)
             ->assertSee('Bezoekersinzichten')
             ->assertSee('Drukste dag')
             ->assertSee('Gemiddelde duur')
             ->assertSee('Top-medewerkers')
-            ->assertSee('Peter');
+            ->assertSee('Peter')
+            ->assertSee('Bezoeken per dag (afgelopen week)')
+            ->assertSee('Bezoeken per week (afgelopen 8 weken)')
+            ->assertSee('Drukste afdelingen')
+            ->assertSee('Verblijfsduur statistieken');
+
+        // Verify chart data is passed to the view
+        $this->assertTrue(isset($response->original->getData()['chartsData']));
+        $chartsData = $response->original->getData()['chartsData'];
+        $this->assertArrayHasKey('visitsPerDay', $chartsData);
+        $this->assertArrayHasKey('visitsPerWeek', $chartsData);
+        $this->assertArrayHasKey('busiestDepartments', $chartsData);
+        $this->assertArrayHasKey('stayDurationStats', $chartsData);
     }
 
     public function test_visitors_are_forbidden_from_viewing_the_dashboard(): void

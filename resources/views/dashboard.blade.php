@@ -76,9 +76,9 @@
     </div>
 
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-green-200 dark:border-green-700 p-6 mb-6">
-        <h2 class="text-lg font-semibold text-green-700 dark:text-green-300 mb-4">{{ __('Bezoekersinzichten') }}</h2>
+        <h2 class="text-lg font-semibold text-green-700 dark:text-green-300 mb-6">{{ __('Bezoekersinzichten') }}</h2>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             <div class="rounded-lg bg-gray-50 dark:bg-gray-900 p-4 border border-gray-200 dark:border-gray-700">
                 <div class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">{{ __('Drukste dag') }}</div>
                 <div class="text-2xl font-bold text-gray-800 dark:text-gray-100 mt-3">{{ $stats['busiest_day'] ?? __('Nog geen data') }}</div>
@@ -90,20 +90,81 @@
                 <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ __('Voor afgeronde bezoeken') }}</div>
             </div>
             <div class="rounded-lg bg-gray-50 dark:bg-gray-900 p-4 border border-gray-200 dark:border-gray-700">
+                <div class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">{{ __('Verblijfsduur') }}</div>
+                <div class="text-2xl font-bold text-gray-800 dark:text-gray-100 mt-3">{{ $chartsData['stayDurationStats']['median'] }}m</div>
+                <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ __('Mediaan (minuten)') }}</div>
+            </div>
+            <div class="rounded-lg bg-gray-50 dark:bg-gray-900 p-4 border border-gray-200 dark:border-gray-700">
                 <div class="flex items-center justify-between mb-3">
                     <div class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">{{ __('Top-medewerkers') }}</div>
                     <span class="text-xs text-gray-500 dark:text-gray-400">{{ __('Top 3') }}</span>
                 </div>
-                <ol class="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+                <ol class="space-y-1 text-xs text-gray-700 dark:text-gray-300">
                     @forelse($stats['top_employees'] as $employee)
-                    <li class="flex items-center justify-between rounded-md bg-white dark:bg-gray-800 p-3 border border-gray-200 dark:border-gray-700">
-                        <span>{{ $employee->user->name }}</span>
+                    <li class="flex items-center justify-between">
+                        <span>{{ Str::limit($employee->user->name, 15) }}</span>
                         <span class="font-semibold text-gray-800 dark:text-gray-100">{{ $employee->visits_count }}</span>
                     </li>
                     @empty
-                    <li class="text-gray-500 dark:text-gray-400">{{ __('Nog geen medewerkers met bezoeken') }}</li>
+                    <li class="text-gray-500 dark:text-gray-400">{{ __('Geen data') }}</li>
                     @endforelse
                 </ol>
+            </div>
+        </div>
+
+        <!-- Charts Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Visits per Day Chart -->
+            <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-6">
+                <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-4">{{ __('Bezoeken per dag (afgelopen week)') }}</h3>
+                <canvas id="visitsPerDayChart" height="80"></canvas>
+            </div>
+
+            <!-- Visits per Week Chart -->
+            <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-6">
+                <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-4">{{ __('Bezoeken per week (afgelopen 8 weken)') }}</h3>
+                <canvas id="visitsPerWeekChart" height="80"></canvas>
+            </div>
+
+            <!-- Busiest Departments Chart -->
+            <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-6">
+                <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-4">{{ __('Drukste afdelingen') }}</h3>
+                <canvas id="busiestDepartmentsChart" height="80"></canvas>
+            </div>
+
+            <!-- Stay Duration Stats -->
+            <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-6">
+                <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-4">{{ __('Verblijfsduur statistieken') }}</h3>
+                <div class="space-y-3">
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-xs text-gray-600 dark:text-gray-400">{{ __('Gemiddelde') }}</span>
+                            <span class="font-semibold text-gray-800 dark:text-gray-100">{{ $chartsData['stayDurationStats']['average'] }}m</span>
+                        </div>
+                        <div class="h-2 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-xs text-gray-600 dark:text-gray-400">{{ __('Minimum') }}</span>
+                            <span class="font-semibold text-gray-800 dark:text-gray-100">{{ $chartsData['stayDurationStats']['min'] }}m</span>
+                        </div>
+                        <div class="h-2 bg-blue-200 dark:bg-blue-800 rounded-full w-1/3"></div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-xs text-gray-600 dark:text-gray-400">{{ __('Maximum') }}</span>
+                            <span class="font-semibold text-gray-800 dark:text-gray-100">{{ $chartsData['stayDurationStats']['max'] }}m</span>
+                        </div>
+                        <div class="h-2 bg-green-200 dark:bg-green-800 rounded-full" style="width: {{ min(100, ($chartsData['stayDurationStats']['max'] / 500) * 100) }}%"></div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-xs text-gray-600 dark:text-gray-400">{{ __('Mediaan') }}</span>
+                            <span class="font-semibold text-gray-800 dark:text-gray-100">{{ $chartsData['stayDurationStats']['median'] }}m</span>
+                        </div>
+                        <div class="h-2 bg-purple-200 dark:bg-purple-800 rounded-full" style="width: {{ min(100, ($chartsData['stayDurationStats']['median'] / 500) * 100) }}%"></div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -171,3 +232,119 @@
         @endif
 
 </x-layouts.app>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script>
+    // Visits per Day Chart
+    const visitsPerDayCtx = document.getElementById('visitsPerDayChart');
+    if (visitsPerDayCtx) {
+        new Chart(visitsPerDayCtx, {
+            type: 'line',
+            data: {
+                labels: @json($chartsData['visitsPerDay']['labels']),
+                datasets: [{
+                    label: '{{ __("Bezoeken") }}',
+                    data: @json($chartsData['visitsPerDay']['data']),
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    tension: 0.4,
+                    fill: true,
+                    pointBackgroundColor: '#3b82f6',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1 },
+                        grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(75, 85, 99, 0.2)' : 'rgba(200, 200, 200, 0.2)' }
+                    },
+                    x: {
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+    }
+
+    // Visits per Week Chart
+    const visitsPerWeekCtx = document.getElementById('visitsPerWeekChart');
+    if (visitsPerWeekCtx) {
+        new Chart(visitsPerWeekCtx, {
+            type: 'bar',
+            data: {
+                labels: @json($chartsData['visitsPerWeek']['labels']),
+                datasets: [{
+                    label: '{{ __("Bezoeken") }}',
+                    data: @json($chartsData['visitsPerWeek']['data']),
+                    backgroundColor: '#10b981',
+                    borderColor: '#059669',
+                    borderWidth: 1,
+                    borderRadius: 4,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1 },
+                        grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(75, 85, 99, 0.2)' : 'rgba(200, 200, 200, 0.2)' }
+                    },
+                    x: {
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+    }
+
+    // Busiest Departments Chart
+    const busiestDepartmentsCtx = document.getElementById('busiestDepartmentsChart');
+    if (busiestDepartmentsCtx) {
+        new Chart(busiestDepartmentsCtx, {
+            type: 'bar',
+            data: {
+                labels: @json($chartsData['busiestDepartments']['labels']),
+                datasets: [{
+                    label: '{{ __("Bezoeken") }}',
+                    data: @json($chartsData['busiestDepartments']['data']),
+                    backgroundColor: '#f59e0b',
+                    borderColor: '#d97706',
+                    borderWidth: 1,
+                    borderRadius: 4,
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1 },
+                        grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(75, 85, 99, 0.2)' : 'rgba(200, 200, 200, 0.2)' }
+                    },
+                    y: {
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+    }
+</script>
