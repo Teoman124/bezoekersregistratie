@@ -16,6 +16,7 @@ use App\Models\Visit;
 use App\Models\Visitor;
 use Illuminate\Mail\Mailable;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\URL;
 
 beforeEach(function () {
     $department = Department::create(['name' => 'IT']);
@@ -44,6 +45,19 @@ beforeEach(function () {
 test('inchecken slaat de aankomsttijd op in de database', function () {
     $this->get(route('visits.checkin', $this->visit))
         ->assertRedirect();
+
+    expect($this->visit->fresh()->check_in_time)->not->toBeNull();
+});
+
+test('qr-link checkin route markeert het bezoek als ingecheckt', function () {
+    $signedUrl = URL::temporarySignedRoute(
+        'visits.checkin.qr',
+        now()->addHours(6),
+        ['visit' => $this->visit],
+    );
+
+    $this->get($signedUrl)
+        ->assertRedirect(route('visits.show', $this->visit));
 
     expect($this->visit->fresh()->check_in_time)->not->toBeNull();
 });

@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Visit;
 use App\Models\Visitor;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Carbon;
 
 class DashboardController extends Controller
 {
@@ -17,24 +18,183 @@ class DashboardController extends Controller
         $yesterday = now()->subDay()->startOfDay();
         $startOfWeek = now()->startOfWeek();
 
-        $visitsToday = Visit::whereDate('expected_arrival_time', $today)->count();
-        $visitsYesterday = Visit::whereDate('expected_arrival_time', $yesterday)->count();
-        $visitsThisWeek = Visit::whereBetween('expected_arrival_time', [$startOfWeek, $today->copy()->endOfDay()])->count();
-        $plannedVisits = Visit::whereNull('check_in_time')->whereDate('expected_arrival_time', '>=', $today)->count();
-
         return view('dashboard', [
-            'stats' => [
-                'users' => User::count(),
-                'employees' => Employee::count(),
-                'visitors' => Visitor::count(),
-                'visits' => Visit::count(),
-                'active_visits' => Visit::active()->count(),
-                'departments' => Department::count(),
-                'visits_today' => $visitsToday,
-                'visits_yesterday' => $visitsYesterday,
-                'visits_this_week' => $visitsThisWeek,
-                'planned_visits' => $plannedVisits,
+            'stats' => array_merge(
+                $this->getCoreStats(),
+                $this->getVisitOverviewStats($today, $yesterday, $startOfWeek),
+                $this->getBehaviorStats(),
+            ),
+            'chartsData' => [
+                'visitsPerDay' => $this->getVisitsPerDay(),
+                'visitsPerWeek' => $this->getVisitsPerWeek(),
+                'busiestDepartments' => $this->getBusiestDepartments(),
+                'stayDurationStats' => $this->getStayDurationStats(),
             ],
         ]);
+    }
+
+    private function getCoreStats(): array
+    {
+        return [
+            'users' => User::count(),
+            'employees' => Employee::count(),
+            'visitors' => Visitor::count(),
+            'visits' => Visit::count(),
+            'active_visits' => Visit::active()->count(),
+            'departments' => Department::count(),
+        ];
+    }
+
+    private function getVisitOverviewStats(Carbon $today, Carbon $yesterday, Carbon $startOfWeek): array
+    {
+        return [
+            'visits_today' => Visit::whereDate('expected_arrival_time', $today)->count(),
+            'visits_yesterday' => Visit::whereDate('expected_arrival_time', $yesterday)->count(),
+            'visits_this_week' => Visit::whereBetween('expected_arrival_time', [$startOfWeek, $today->copy()->endOfDay()])->count(),
+            'planned_visits' => Visit::whereNull('check_in_time')->whereDate('expected_arrival_time', '>=', $today)->count(),
+        ];
+    }
+
+    private function getBehaviorStats(): array
+    {
+        $busiestDay = $this->getBusiestDay();
+        $averageDurationSeconds = $this->getAverageVisitDuration();
+
+        return [
+            'busiest_day' => $busiestDay ? Carbon::parse($busiestDay->day)->format('d-m-Y') : null,
+            'busiest_day_count' => $busiestDay ? $busiestDay->total : 0,
+            'average_visit_duration' => $averageDurationSeconds > 0
+                ? $this->formatDuration($averageDurationSeconds)
+                : __('Nog geen afgeronde bezoeken'),
+            'top_employees' => $this->getTopEmployees(),
+        ];
+    }
+
+    private function getBusiestDay(): ?Visit
+    {
+        return Visit::whereNotNull('expected_arrival_time')
+            ->selectRaw('DATE(expected_arrival_time) as day, COUNT(*) as total')
+            ->groupBy('day')
+            ->orderByDesc('total')
+            ->orderByDesc('day')
+            ->first();
+    }
+
+    private function getAverageVisitDuration(): int
+    {
+        $completedVisits = Visit::whereNotNull('check_in_time')
+            ->whereNotNull('check_out_time')
+            ->get(['check_in_time', 'check_out_time']);
+
+        return (int) $completedVisits
+            ->map(fn(Visit $visit) => $visit->check_in_time->diffInSeconds($visit->check_out_time))
+            ->avg();
+    }
+
+    private function getTopEmployees()
+    {
+        return Employee::with('user')
+            ->withCount('visits')
+            ->has('visits')
+            ->orderByDesc('visits_count')
+            ->limit(3)
+            ->get();
+    }
+
+    private function formatDuration(int $seconds): string
+    {
+        $hours = intdiv($seconds, 3600);
+        $minutes = intdiv($seconds % 3600, 60);
+
+        if ($hours > 0) {
+            return sprintf('%su %sm', $hours, $minutes);
+        }
+
+        return sprintf('%sm', $minutes);
+    }
+
+    private function getVisitsPerDay(): array
+    {
+        $days = collect();
+        for ($i = 6; $i >= 0; $i--) {
+            $date = now()->subDays($i)->startOfDay();
+            $days->push([
+                'date' => $date->format('d-m'),
+                'day' => $date->format('D'),
+                'count' => Visit::whereDate('expected_arrival_time', $date)->count(),
+            ]);
+        }
+
+        return [
+            'labels' => $days->pluck('day')->toArray(),
+            'data' => $days->pluck('count')->toArray(),
+        ];
+    }
+
+    private function getVisitsPerWeek(): array
+    {
+        $weeks = collect();
+        for ($i = 7; $i >= 0; $i--) {
+            $startOfWeek = now()->subWeeks($i)->startOfWeek();
+            $endOfWeek = $startOfWeek->copy()->endOfWeek();
+            $weeks->push([
+                'label' => 'W' . $startOfWeek->format('W'),
+                'count' => Visit::whereBetween('expected_arrival_time', [$startOfWeek, $endOfWeek])->count(),
+            ]);
+        }
+
+        return [
+            'labels' => $weeks->pluck('label')->toArray(),
+            'data' => $weeks->pluck('count')->toArray(),
+        ];
+    }
+
+    private function getBusiestDepartments(): array
+    {
+        $departments = Department::withCount(['employees' => fn($q) => $q->withCount('visits')])
+            ->get()
+            ->map(fn($dept) => [
+                'name' => $dept->name ?: __('Zonder afdeling'),
+                'visits_count' => $dept->employees->sum(fn($emp) => $emp->visits_count ?? 0),
+            ])
+            ->sortByDesc('visits_count')
+            ->take(5)
+            ->values();
+
+        return [
+            'labels' => $departments->pluck('name')->toArray(),
+            'data' => $departments->pluck('visits_count')->toArray(),
+        ];
+    }
+
+    private function getStayDurationStats(): array
+    {
+        $completedVisits = Visit::whereNotNull('check_in_time')
+            ->whereNotNull('check_out_time')
+            ->get(['check_in_time', 'check_out_time'])
+            ->map(fn(Visit $visit) => $visit->check_in_time->diffInMinutes($visit->check_out_time))
+            ->filter(fn($minutes) => $minutes > 0);
+
+        if ($completedVisits->isEmpty()) {
+            return [
+                'average' => 0,
+                'min' => 0,
+                'max' => 0,
+                'median' => 0,
+            ];
+        }
+
+        $sorted = $completedVisits->sort()->values();
+        $count = $sorted->count();
+        $median = $count % 2 === 0
+            ? ($sorted[$count / 2 - 1] + $sorted[$count / 2]) / 2
+            : $sorted[($count - 1) / 2];
+
+        return [
+            'average' => (int) $completedVisits->avg(),
+            'min' => (int) $completedVisits->min(),
+            'max' => (int) $completedVisits->max(),
+            'median' => (int) $median,
+        ];
     }
 }
