@@ -10,16 +10,19 @@ use App\Models\Visit;
 use App\Models\Visitor;
 use App\Services\MailtrapApiService;
 use Illuminate\Http\Request;
-use Illuminate\Http\RedirectResponse; // 🔥 Voeg deze toe
-use Illuminate\Contracts\View\View; // 🔥 Voeg deze toe
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\URL;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Carbon;
+
 
 class VisitController extends Controller
 {
     public function export(): StreamedResponse
     {
-        $fileName = 'bezoekers-historie-' . now()->format('Y-m-d_His') . '.csv';
+        $fileName = 'bezoekers-historie-'.now()->format('Y-m-d_His').'.csv';
 
         $visits = Visit::query()
             ->with(['visitor.user', 'employee.user', 'employee.department'])
@@ -84,6 +87,66 @@ class VisitController extends Controller
         ]);
     }
 
+    public function activeExport(): StreamedResponse
+    {
+        $visits = $this->getActiveVisits();
+        $employees = $this->getPresentEmployees($visits);
+        $fileName = 'noodlijst-'.now()->format('Y-m-d_His').'.csv';
+
+        return response()->streamDownload(function () use ($visits, $employees): void {
+            $output = fopen('php://output', 'wb');
+
+            fwrite($output, "\xEF\xBB\xBF");
+
+            fputcsv($output, [
+                'Type',
+                'Naam',
+                'E-mail',
+                'Bedrijf',
+                'Afdeling',
+                'Functie',
+                'Gastheer',
+                'Reden',
+                'Aankomst',
+                'Status',
+            ]);
+
+            foreach ($visits as $visit) {
+                fputcsv($output, [
+                    'Bezoeker',
+                    $visit->visitor?->user?->name ?? '-',
+                    $visit->visitor?->user?->email ?? '-',
+                    $visit->visitor?->company_name ?? '-',
+                    $visit->employee?->department?->name ?? '-',
+                    '-',
+                    $visit->employee?->user?->name ?? '-',
+                    $visit->reason_of_visit ?: '-',
+                    $visit->check_in_time?->format('Y-m-d H:i:s') ?? '-',
+                    'aanwezig',
+                ]);
+            }
+
+            foreach ($employees as $employee) {
+                fputcsv($output, [
+                    'Medewerker',
+                    $employee->user?->name ?? '-',
+                    $employee->user?->email ?? '-',
+                    '-',
+                    $employee->department?->name ?? '-',
+                    $employee->function ?: '-',
+                    '-',
+                    '-',
+                    '-',
+                    'aanwezig',
+                ]);
+            }
+
+            fclose($output);
+        }, $fileName, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+        ]);
+    }
+
     public function index(Request $request)
     {
         $query = Visit::with(['visitor.user', 'employee.user']);
@@ -103,14 +166,12 @@ class VisitController extends Controller
         return view('visits.index', compact('visits'));
     }
 
-    public function active()
+    public function active(): View
     {
-        $visits = Visit::active()
-            ->with(['visitor.user', 'employee.user'])
-            ->latest('check_in_time')
-            ->get();
+        $visits = $this->getActiveVisits();
+        $employees = $this->getPresentEmployees($visits);
 
-        return view('visits.active', compact('visits'));
+        return view('visits.active', compact('visits', 'employees'));
     }
 
     public function history(Request $request)
@@ -328,7 +389,7 @@ class VisitController extends Controller
             Notification::create([
                 'user_id' => $visit->employee->user_id,
                 'title' => 'Bezoeker ingecheckt',
-                'message' => 'Je bezoeker ' . $visit->visitor->user->name . ' is aangekomen.',
+                'message' => 'Je bezoeker '.$visit->visitor->user->name.' is aangekomen.',
             ]);
         }
 
@@ -402,7 +463,7 @@ class VisitController extends Controller
             Notification::create([
                 'user_id' => $visit->employee->user_id,
                 'title' => 'Bezoeker ingecheckt',
-                'message' => 'Je bezoeker ' . $visit->visitor->user->name . ' is aangekomen.',
+                'message' => 'Je bezoeker '.$visit->visitor->user->name.' is aangekomen.',
             ]);
         }
 
@@ -428,8 +489,35 @@ class VisitController extends Controller
         return back()->with('success', 'Visitor checked out.');
     }
 
-    private function sendMail(Visit $visit, MailtrapApiService $mailtrapApiService): void
+    private function getActiveVisits(): Collection
     {
+        return Visit::active()
+            ->with(['visitor.user', 'employee.user', 'employee.department'])
+            ->latest('check_in_time')
+            ->get();
+    }
+
+    private function getPresentEmployees(Collection $visits): Collection
+    {
+        $employeeIds = $visits
+            ->pluck('host_employee_id')
+            ->filter()
+            ->unique()
+            ->values();
+
+        if ($employeeIds->isEmpty()) {
+            return collect();
+        }
+
+        return Employee::query()
+            ->with(['user', 'department'])
+            ->whereIn('id', $employeeIds)
+            ->get()
+            ->sortBy(fn (Employee $employee) => $employee->user?->name ?? '')
+            ->values();
+    }
+
+    private function sendMail(Visit $visit, MailtrapApiService $mailtrapApiService): void    {
         $visitor = $visit->visitor?->user;
         $employee = $visit->employee?->user;
         $visitorName = $visitor?->name ?? 'Bezoeker';
@@ -442,24 +530,24 @@ class VisitController extends Controller
                 'email' => $visitor?->email,
                 'subject' => 'Bevestiging van je bezoek',
                 'text' => "Hallo {$visitorName},\n\nJe bezoek is ingepland bij {$employeeName}.\nVerwachte aankomst: {$arrivalTime}.",
-                'html' => '<p>Hallo ' . e($visitorName) . ',</p>'
-                    . '<p>Je bezoek is ingepland bij ' . e($employeeName) . '.</p>'
-                    . '<p><strong>Verwachte aankomst:</strong> ' . e($arrivalTime) . '</p>',
+                'html' => '<p>Hallo '.e($visitorName).',</p>'
+                    .'<p>Je bezoek is ingepland bij '.e($employeeName).'.</p>'
+                    .'<p><strong>Verwachte aankomst:</strong> '.e($arrivalTime).'</p>',
             ],
             [
                 'email' => $employee?->email,
                 'subject' => 'Nieuwe afspraak ingepland',
                 'text' => "Hallo {$employeeName},\n\nEr is een bezoek ingepland door {$visitorName}.\nVerwachte aankomst: {$arrivalTime}.",
-                'html' => '<p>Hallo ' . e($employeeName) . ',</p>'
-                    . '<p>Er is een bezoek ingepland door ' . e($visitorName) . '.</p>'
-                    . '<p><strong>Verwachte aankomst:</strong> ' . e($arrivalTime) . '</p>',
+                'html' => '<p>Hallo '.e($employeeName).',</p>'
+                    .'<p>Er is een bezoek ingepland door '.e($visitorName).'.</p>'
+                    .'<p><strong>Verwachte aankomst:</strong> '.e($arrivalTime).'</p>',
             ],
         ];
 
         if ($departureTime) {
             foreach ($recipientMails as &$recipientMail) {
                 $recipientMail['text'] .= "\nVerwacht vertrek: {$departureTime}.";
-                $recipientMail['html'] .= '<p><strong>Verwacht vertrek:</strong> ' . e($departureTime) . '</p>';
+                $recipientMail['html'] .= '<p><strong>Verwacht vertrek:</strong> '.e($departureTime).'</p>';
             }
 
             unset($recipientMail);
@@ -482,9 +570,10 @@ class VisitController extends Controller
         }
     }
     
-    /**
- * Toon de NDA pagina voor visitors (verplicht!)
- */
+
+        /**
+     * Toon de NDA pagina voor visitors (verplicht!)
+     */
     /**
  * Toon de NDA pagina voor visitors (verplicht!)
  */
@@ -496,17 +585,17 @@ class VisitController extends Controller
             abort(403, 'Je hebt geen toegang tot dit bezoek.');
         }
 
-        // Als NDA al is getekend, ga naar dashboard
         if ($visit->agreed_to_rules) {
-            return redirect()->route('dashboard')->with('success', 'Je hebt de NDA al geaccepteerd.');
+            return redirect()->route('visits.myvisits')->with('success', 'Je hebt de NDA al geaccepteerd.');
         }
 
-        return view('visitor.nda-agreement', compact('visit'));
+        // 🔥 Gewijzigd: view in visits map
+        return view('visits.nda', compact('visit'));
     }
 
     /**
-     * Verwerk de NDA acceptatie
-     */
+ * Verwerk de NDA acceptatie
+ */
     public function acceptNda(Request $request, Visit $visit): RedirectResponse
     {
         $user = $request->user();
@@ -515,7 +604,6 @@ class VisitController extends Controller
             abort(403, 'Je hebt geen toegang tot dit bezoek.');
         }
 
-        // Valideer akkoord
         $request->validate([
             'agreed_to_rules' => 'required|accepted',
         ], [
@@ -523,7 +611,6 @@ class VisitController extends Controller
             'agreed_to_rules.accepted' => 'Je moet de NDA en huisregels accepteren om verder te gaan.',
         ]);
 
-        // Update met NDA akkoord
         $visit->update([
             'agreed_to_rules' => true,
             'agreed_at' => now(),
@@ -531,10 +618,8 @@ class VisitController extends Controller
             'check_in_time' => $visit->check_in_time ?? now(),
         ]);
 
-        // Stuur bevestigingsmail
         $this->sendNdaConfirmationEmail($visit);
 
-        // Stuur notificatie naar employee
         if ($visit->employee && $visit->visitor && $visit->visitor->user) {
             Notification::create([
                 'user_id' => $visit->employee->user_id,
@@ -544,7 +629,8 @@ class VisitController extends Controller
             ]);
         }
 
-        return redirect()->route('dashboard')
+        // 🔥 Gewijzigd: redirect naar /Visits/my in plaats van dashboard
+        return redirect()->route('visits.myvisits')
             ->with('success', '✅ Bedankt! Je hebt de NDA succesvol geaccepteerd. Welkom!');
     }
 

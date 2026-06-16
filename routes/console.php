@@ -11,3 +11,7 @@ Artisan::command('inspire', function () {
 Schedule::command('app:notify-employee-of-arriving-visitor')
     ->everyMinute()
     ->withoutOverlapping();
+
+Schedule::command('app:anonymize-old-visitor-data')
+    ->daily()
+    ->withoutOverlapping();

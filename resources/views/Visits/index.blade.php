@@ -5,6 +5,9 @@
             <p class="text-sm text-gray-600 dark:text-gray-400">Overzicht van alle ingeplande en afgeronde bezoeken.</p>
         </div>
         <div class="flex flex-wrap gap-2">
+            <a href="{{ route('visits.active') }}" class="px-4 py-2 rounded-md bg-rose-600 hover:bg-rose-700 text-white">
+                Wie is er nu in het pand?
+            </a>
             <a href="{{ route('visits.history') }}" class="px-4 py-2 rounded-md bg-slate-600 hover:bg-slate-700 text-white">
                 Bezoekgeschiedenis
             </a>
