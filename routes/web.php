@@ -22,14 +22,14 @@ Route::get('dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified', 'check.role:admin,employee'])
     ->name('dashboard');
 
-// 🔥 NDA Routes voor visitors
+// NDA Routes voor visitors
 Route::middleware(['auth', 'check.role:visitor'])->group(function () {
-    Route::get('/visitor/nda/{visit}', [VisitController::class, 'showNdaPage'])
+    Route::get('/visits/{visit}/nda', [VisitController::class, 'showNdaPage'])
         ->name('visitor.nda.show');
 
-    Route::post('/visitor/nda/{visit}/accept', [VisitController::class, 'acceptNda'])
+    Route::post('/visits/{visit}/nda/accept', [VisitController::class, 'acceptNda'])
         ->name('visitor.nda.accept');
-}); // 🔥 Deze haakje was vergeten!
+});
 
 Route::middleware(['auth'])->group(function () {
     Route::get('settings/profile', [Settings\ProfileController::class, 'edit'])->name('settings.profile.edit');
