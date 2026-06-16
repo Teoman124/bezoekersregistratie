@@ -59,6 +59,7 @@ class DashboardTest extends TestCase
             ->assertSee('Gemiddelde duur')
             ->assertSee('Top-medewerkers')
             ->assertSee('Peter')
+            ->assertSee('Wie is er nu in het pand?')
             ->assertSee('Bezoeken per dag (afgelopen week)')
             ->assertSee('Bezoeken per week (afgelopen 8 weken)')
             ->assertSee('Drukste afdelingen')

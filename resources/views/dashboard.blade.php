@@ -178,6 +178,8 @@
                 class="px-4 py-3 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">{{ __('Nieuwe medewerker') }}</a>
             <a href="{{ route('visitors.create') }}"
                 class="px-4 py-3 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">{{ __('Nieuwe bezoeker') }}</a>
+            <a href="{{ route('visits.active') }}"
+                class="px-4 py-3 rounded-md border border-rose-200 text-rose-700 dark:border-rose-800 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-900/20">{{ __('Wie is er nu in het pand?') }}</a>
             <a href="{{ route('departments.index') }}"
                 class="px-4 py-3 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">{{ __('Afdelingen') }}
                 ({{ $stats['departments'] }})</a>

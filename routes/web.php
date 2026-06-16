@@ -50,6 +50,7 @@ Route::middleware(['auth', 'check.role:admin,employee'])->group(function () {
     // Bezoeken
     Route::get('/Visits', [VisitController::class, 'index'])->name('visits.index');
     Route::get('/Visits/active', [VisitController::class, 'active'])->name('visits.active');
+    Route::get('/Visits/active/export', [VisitController::class, 'activeExport'])->name('visits.active.export');
     Route::get('/Visits/create', [VisitController::class, 'create'])->name('visits.create');
     Route::post('/Visits', [VisitController::class, 'store'])->name('visits.store');
     Route::get('/Visits/{visit}/edit', [VisitController::class, 'edit'])->name('visits.edit');
@@ -133,5 +134,5 @@ Route::middleware(['auth', 'check.role:admin,employee,visitor'])->group(function
     Route::get('/Mailbox/{mailboxMessage}', [MailboxController::class, 'show'])->name('mailbox.show');
     Route::delete('/Mailbox/{mailboxMessage}', [MailboxController::class, 'destroy'])->name('mailbox.destroy');
 });
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';
 // niet meer veranderen nu T_T

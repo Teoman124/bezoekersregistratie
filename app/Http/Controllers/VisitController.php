@@ -9,7 +9,9 @@ use App\Models\Notification;
 use App\Models\Visit;
 use App\Models\Visitor;
 use App\Services\MailtrapApiService;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\URL;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -17,7 +19,7 @@ class VisitController extends Controller
 {
     public function export(): StreamedResponse
     {
-        $fileName = 'bezoekers-historie-' . now()->format('Y-m-d_His') . '.csv';
+        $fileName = 'bezoekers-historie-'.now()->format('Y-m-d_His').'.csv';
 
         $visits = Visit::query()
             ->with(['visitor.user', 'employee.user', 'employee.department'])
@@ -67,6 +69,66 @@ class VisitController extends Controller
         ]);
     }
 
+    public function activeExport(): StreamedResponse
+    {
+        $visits = $this->getActiveVisits();
+        $employees = $this->getPresentEmployees($visits);
+        $fileName = 'noodlijst-'.now()->format('Y-m-d_His').'.csv';
+
+        return response()->streamDownload(function () use ($visits, $employees): void {
+            $output = fopen('php://output', 'wb');
+
+            fwrite($output, "\xEF\xBB\xBF");
+
+            fputcsv($output, [
+                'Type',
+                'Naam',
+                'E-mail',
+                'Bedrijf',
+                'Afdeling',
+                'Functie',
+                'Gastheer',
+                'Reden',
+                'Aankomst',
+                'Status',
+            ]);
+
+            foreach ($visits as $visit) {
+                fputcsv($output, [
+                    'Bezoeker',
+                    $visit->visitor?->user?->name ?? '-',
+                    $visit->visitor?->user?->email ?? '-',
+                    $visit->visitor?->company_name ?? '-',
+                    $visit->employee?->department?->name ?? '-',
+                    '-',
+                    $visit->employee?->user?->name ?? '-',
+                    $visit->reason_of_visit ?: '-',
+                    $visit->check_in_time?->format('Y-m-d H:i:s') ?? '-',
+                    'aanwezig',
+                ]);
+            }
+
+            foreach ($employees as $employee) {
+                fputcsv($output, [
+                    'Medewerker',
+                    $employee->user?->name ?? '-',
+                    $employee->user?->email ?? '-',
+                    '-',
+                    $employee->department?->name ?? '-',
+                    $employee->function ?: '-',
+                    '-',
+                    '-',
+                    '-',
+                    'aanwezig',
+                ]);
+            }
+
+            fclose($output);
+        }, $fileName, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+        ]);
+    }
+
     public function index(Request $request)
     {
         $query = Visit::with(['visitor.user', 'employee.user']);
@@ -86,14 +148,12 @@ class VisitController extends Controller
         return view('visits.index', compact('visits'));
     }
 
-    public function active()
+    public function active(): View
     {
-        $visits = Visit::active()
-            ->with(['visitor.user', 'employee.user'])
-            ->latest('check_in_time')
-            ->get();
+        $visits = $this->getActiveVisits();
+        $employees = $this->getPresentEmployees($visits);
 
-        return view('visits.active', compact('visits'));
+        return view('visits.active', compact('visits', 'employees'));
     }
 
     public function history(Request $request)
@@ -251,7 +311,7 @@ class VisitController extends Controller
             Notification::create([
                 'user_id' => $visit->employee->user_id,
                 'title' => 'Bezoeker ingecheckt',
-                'message' => 'Je bezoeker ' . $visit->visitor->user->name . ' is aangekomen.',
+                'message' => 'Je bezoeker '.$visit->visitor->user->name.' is aangekomen.',
             ]);
         }
 
@@ -325,7 +385,7 @@ class VisitController extends Controller
             Notification::create([
                 'user_id' => $visit->employee->user_id,
                 'title' => 'Bezoeker ingecheckt',
-                'message' => 'Je bezoeker ' . $visit->visitor->user->name . ' is aangekomen.',
+                'message' => 'Je bezoeker '.$visit->visitor->user->name.' is aangekomen.',
             ]);
         }
 
@@ -351,6 +411,34 @@ class VisitController extends Controller
         return back()->with('success', 'Visitor checked out.');
     }
 
+    private function getActiveVisits(): Collection
+    {
+        return Visit::active()
+            ->with(['visitor.user', 'employee.user', 'employee.department'])
+            ->latest('check_in_time')
+            ->get();
+    }
+
+    private function getPresentEmployees(Collection $visits): Collection
+    {
+        $employeeIds = $visits
+            ->pluck('host_employee_id')
+            ->filter()
+            ->unique()
+            ->values();
+
+        if ($employeeIds->isEmpty()) {
+            return collect();
+        }
+
+        return Employee::query()
+            ->with(['user', 'department'])
+            ->whereIn('id', $employeeIds)
+            ->get()
+            ->sortBy(fn (Employee $employee) => $employee->user?->name ?? '')
+            ->values();
+    }
+
     private function sendMail($visit, MailtrapApiService $mailtrapApiService): void
     {
         $visitor = $visit->visitor?->user;
@@ -365,24 +453,24 @@ class VisitController extends Controller
                 'email' => $visitor?->email,
                 'subject' => 'Bevestiging van je bezoek',
                 'text' => "Hallo {$visitorName},\n\nJe bezoek is ingepland bij {$employeeName}.\nVerwachte aankomst: {$arrivalTime}.",
-                'html' => '<p>Hallo ' . e($visitorName) . ',</p>'
-                    . '<p>Je bezoek is ingepland bij ' . e($employeeName) . '.</p>'
-                    . '<p><strong>Verwachte aankomst:</strong> ' . e($arrivalTime) . '</p>',
+                'html' => '<p>Hallo '.e($visitorName).',</p>'
+                    .'<p>Je bezoek is ingepland bij '.e($employeeName).'.</p>'
+                    .'<p><strong>Verwachte aankomst:</strong> '.e($arrivalTime).'</p>',
             ],
             [
                 'email' => $employee?->email,
                 'subject' => 'Nieuwe afspraak ingepland',
                 'text' => "Hallo {$employeeName},\n\nEr is een bezoek ingepland door {$visitorName}.\nVerwachte aankomst: {$arrivalTime}.",
-                'html' => '<p>Hallo ' . e($employeeName) . ',</p>'
-                    . '<p>Er is een bezoek ingepland door ' . e($visitorName) . '.</p>'
-                    . '<p><strong>Verwachte aankomst:</strong> ' . e($arrivalTime) . '</p>',
+                'html' => '<p>Hallo '.e($employeeName).',</p>'
+                    .'<p>Er is een bezoek ingepland door '.e($visitorName).'.</p>'
+                    .'<p><strong>Verwachte aankomst:</strong> '.e($arrivalTime).'</p>',
             ],
         ];
 
         if ($departureTime) {
             foreach ($recipientMails as &$recipientMail) {
                 $recipientMail['text'] .= "\nVerwacht vertrek: {$departureTime}.";
-                $recipientMail['html'] .= '<p><strong>Verwacht vertrek:</strong> ' . e($departureTime) . '</p>';
+                $recipientMail['html'] .= '<p><strong>Verwacht vertrek:</strong> '.e($departureTime).'</p>';
             }
 
             unset($recipientMail);
