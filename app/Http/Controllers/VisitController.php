@@ -333,7 +333,7 @@ class VisitController extends Controller
                 'html' => '<p>Hallo '.e($visitorName).',</p>'
                     .'<p>Je bezoek is ingepland bij '.e($employeeName).'.</p>'
                     .'<p><strong>Verwachte aankomst:</strong> '.e($arrivalTime).'</p>',
-            ],
+            ],  
             [
                 'email' => $employee?->email,
                 'subject' => 'Nieuwe afspraak ingepland',
