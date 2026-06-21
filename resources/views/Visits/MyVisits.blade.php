@@ -39,6 +39,7 @@
                         <th class="px-4 py-3">Aankomst</th>
                         <th class="px-4 py-3">Vertrek</th>
                         <th class="px-4 py-3">Status</th>
+                        <th class="px-4 py-3">NDA</th> <!-- 🔥 Nieuwe kolom -->
                         <th class="px-4 py-3">Acties</th>
                     </tr>
                 </thead>
@@ -72,6 +73,44 @@
                                 @endif
                             </td>
                             <td class="px-4 py-3">
+                                <!-- 🔥 NDA Status en knop -->
+                                @if(auth()->user()?->role === 'visitor')
+                                    @if($visit->agreed_to_rules)
+                                        <span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300">
+                                            ✅ Getekend
+                                        </span>
+                                        <span class="text-xs text-gray-500 dark:text-gray-400 block">
+                                            {{ $visit->agreed_at?->format('d-m-Y H:i') }}
+                                        </span>
+                                    @else
+                                        <div class="flex flex-col items-start gap-1">
+                                            <span class="px-2 py-1 rounded-full text-xs bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300">
+                                                ⚠️ Niet getekend
+                                            </span>
+                                            @if(!$visit->check_out_time)
+                                                <a href="{{ route('visitor.nda.show', $visit) }}" 
+                                                   class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded transition-colors">
+                                                    📝 Teken NDA
+                                                </a>
+                                            @else
+                                                <span class="text-xs text-gray-500">Bezoek afgerond</span>
+                                            @endif
+                                        </div>
+                                    @endif
+                                @else
+                                    <!-- Admin/Employee zien NDA status -->
+                                    @if($visit->agreed_to_rules)
+                                        <span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300">
+                                            ✅ {{ $visit->agreed_at?->format('d-m-Y H:i') }}
+                                        </span>
+                                    @else
+                                        <span class="px-2 py-1 rounded-full text-xs bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300">
+                                            ❌ Niet getekend
+                                        </span>
+                                    @endif
+                                @endif
+                            </td>
+                            <td class="px-4 py-3">
                                 <div class="flex flex-wrap gap-2">
                                     @if(auth()->user()?->role !== 'visitor')
                                         @if(!$visit->check_in_time)
@@ -98,7 +137,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">Geen bezoeken
+                            <td colspan="7" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">Geen bezoeken
                                 gevonden.</td>
                         </tr>
                     @endforelse

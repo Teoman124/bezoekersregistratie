@@ -23,6 +23,15 @@ Route::get('dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified', 'check.role:admin,employee'])
     ->name('dashboard');
 
+// NDA Routes voor visitors
+Route::middleware(['auth', 'check.role:visitor'])->group(function () {
+    Route::get('/visits/{visit}/nda', [VisitController::class, 'showNdaPage'])
+        ->name('visitor.nda.show');
+
+    Route::post('/visits/{visit}/nda/accept', [VisitController::class, 'acceptNda'])
+        ->name('visitor.nda.accept');
+});
+
 Route::middleware(['auth'])->group(function () {
     Route::get('settings/profile', [Settings\ProfileController::class, 'edit'])->name('settings.profile.edit');
     Route::put('settings/profile', [Settings\ProfileController::class, 'update'])->name('settings.profile.update');
@@ -60,6 +69,7 @@ Route::middleware(['auth', 'check.role:admin,employee'])->group(function () {
     Route::match(['get', 'post'], '/Visits/checkin/{visit}', [VisitController::class, 'checkIn'])->name('visits.checkin');
     Route::get('/Visits/checkout/{visit}', [VisitController::class, 'checkOut'])->name('visits.checkout');
 });
+
 // Medewerkers
 Route::middleware(['auth', 'check.role:admin'])->group(function () {
     Route::get('/Employees', [EmployeeController::class, 'index'])->name('employees.index');
@@ -81,6 +91,7 @@ Route::middleware(['auth', 'check.role:admin'])->group(function () {
     Route::put('/Departments/{department}', [DepartmentController::class, 'update'])->name('departments.update');
     Route::delete('/Departments/{department}', [DepartmentController::class, 'destroy'])->name('departments.destroy');
 });
+
 // Gebruikers
 Route::middleware(['auth', 'check.role:admin,employee'])->group(function () {
     Route::get('/Users', [UserController::class, 'index'])->name('users.index');
@@ -94,6 +105,7 @@ Route::middleware(['auth', 'check.role:admin'])->group(function () {
     Route::put('/Users/{user}', [UserController::class, 'update'])->name('users.update');
     Route::delete('/Users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
 });
+
 // Bezoekers
 Route::middleware(['auth', 'check.role:admin,employee'])->group(function () {
     Route::get('/Visitors', [VisitorController::class, 'index'])->name('visitors.index');
@@ -104,6 +116,7 @@ Route::middleware(['auth', 'check.role:admin,employee'])->group(function () {
     Route::put('/Visitors/{visitor}', [VisitorController::class, 'update'])->name('visitors.update');
     Route::delete('/Visitors/{visitor}', [VisitorController::class, 'destroy'])->name('visitors.destroy');
 });
+
 // Notificaties
 Route::middleware(['auth', 'check.role:admin,employee,visitor'])->group(function () {
     Route::get('/Notifications', [NotificationController::class, 'index'])->name('notifications.index');
@@ -141,4 +154,6 @@ Route::post('/kiosk/checkin', [KioskController::class, 'checkIn'])->name('kiosk.
 Route::get('/kiosk/success', [KioskController::class, 'success'])->name('kiosk.success');
 Route::get('/kiosk/reset', [KioskController::class, 'reset'])->name('kiosk.reset');
 require __DIR__.'/auth.php';
+
+require __DIR__ . '/auth.php';
 // niet meer veranderen nu T_T

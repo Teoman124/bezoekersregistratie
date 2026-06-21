@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder; // Voeg deze toe
 
 class Visit extends Model
 {
@@ -14,6 +15,9 @@ class Visit extends Model
         'expected_departure_time',
         'check_in_time',
         'check_out_time',
+        'agreed_to_rules',
+        'agreed_at',
+        'agreed_ip',
     ];
 
     protected $casts = [
@@ -21,6 +25,7 @@ class Visit extends Model
         'expected_departure_time' => 'datetime',
         'check_in_time' => 'datetime',
         'check_out_time' => 'datetime',
+        'agreed_at' => 'datetime', // Voeg deze toe
     ];
 
     public function visitor()
@@ -46,9 +51,21 @@ class Visit extends Model
         return 'checked_out';
     }
 
-    public function scopeActive($query)
+    // Voeg type hint toe voor de $query parameter
+    public function scopeActive(Builder $query): Builder
     {
         return $query->whereNotNull('check_in_time')
             ->whereNull('check_out_time');
+    }
+
+    // Optionele scope voor NDA status
+    public function scopeAgreedToRules(Builder $query): Builder
+    {
+        return $query->where('agreed_to_rules', true);
+    }
+
+    public function scopeNotAgreedToRules(Builder $query): Builder
+    {
+        return $query->where('agreed_to_rules', false);
     }
 }

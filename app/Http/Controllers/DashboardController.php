@@ -8,15 +8,50 @@ use App\Models\User;
 use App\Models\Visit;
 use App\Models\Visitor;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 
 class DashboardController extends Controller
 {
-    public function index(): View
+    /**
+     * @return View|RedirectResponse
+     */
+    public function index(Request $request): View|RedirectResponse
     {
-        $today = now()->startOfDay();
-        $yesterday = now()->subDay()->startOfDay();
-        $startOfWeek = now()->startOfWeek();
+        $user = $request->user();
+
+        // 🔥 CHECK: Is de gebruiker een visitor met een actief of gepland bezoek?
+        if ($user && $user->visitor) {
+            // Zoek een actief bezoek (ingecheckt maar nog niet uitgecheckt) zonder NDA
+            $activeVisit = Visit::where('visitor_id', $user->visitor->id)
+                ->whereNotNull('check_in_time')
+                ->whereNull('check_out_time')
+                ->first();
+
+            // Als er een actief bezoek is EN geen NDA akkoord
+            if ($activeVisit && !$activeVisit->agreed_to_rules) {
+                return redirect()->route('visitor.nda.show', $activeVisit)
+                    ->with('error', '⚠️ Je moet eerst de NDA/huisregels accepteren!');
+            }
+
+            // Zoek een gepland bezoek (nog niet ingecheckt) van vandaag of morgen
+            $pendingVisit = Visit::where('visitor_id', $user->visitor->id)
+                ->whereNull('check_in_time')
+                ->where('expected_arrival_time', '>=', now()->subHours(2))
+                ->first();
+
+            // Als er een gepland bezoek is, stuur naar NDA pagina
+            if ($pendingVisit) {
+                return redirect()->route('visitor.nda.show', $pendingVisit)
+                    ->with('info', '📋 Je moet de NDA/huisregels accepteren voordat je kunt inchecken.');
+            }
+        }
+
+        // 📊 Dashboard statistieken voor admin/employee
+        $today = Carbon::now()->startOfDay();
+        $yesterday = Carbon::now()->subDay()->startOfDay();
+        $startOfWeek = Carbon::now()->startOfWeek();
 
         return view('dashboard', [
             'stats' => array_merge(
@@ -160,7 +195,7 @@ class DashboardController extends Controller
     {
         $days = collect();
         for ($i = 6; $i >= 0; $i--) {
-            $date = now()->subDays($i)->startOfDay();
+            $date = Carbon::now()->subDays($i)->startOfDay();
             $days->push([
                 'date' => $date->format('d-m'),
                 'day' => $date->format('D'),
@@ -178,7 +213,7 @@ class DashboardController extends Controller
     {
         $weeks = collect();
         for ($i = 7; $i >= 0; $i--) {
-            $startOfWeek = now()->subWeeks($i)->startOfWeek();
+            $startOfWeek = Carbon::now()->subWeeks($i)->startOfWeek();
             $endOfWeek = $startOfWeek->copy()->endOfWeek();
             $weeks->push([
                 'label' => 'W' . $startOfWeek->format('W'),

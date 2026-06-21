@@ -9,11 +9,14 @@ use App\Models\Notification;
 use App\Models\Visit;
 use App\Models\Visitor;
 use App\Services\MailtrapApiService;
-use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\URL;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Carbon;
+
 
 class VisitController extends Controller
 {
@@ -44,9 +47,21 @@ class VisitController extends Controller
                 'Verwacht vertrek',
                 'Werkelijke vertrek',
                 'Status',
+                'Akkoord NDA/Huisregels',
+                'Akkoord datum/tijd',
+                'Akkoord IP-adres',
             ]);
 
             foreach ($visits as $visit) {
+                // Bepaal status handmatig (fix voor stdClass error)
+                if ($visit->check_in_time === null) {
+                    $status = 'planned';
+                } elseif ($visit->check_out_time === null) {
+                    $status = 'active';
+                } else {
+                    $status = 'checked_out';
+                }
+
                 fputcsv($output, [
                     $visit->expected_arrival_time?->format('Y-m-d'),
                     $visit->visitor?->user?->name ?? '-',
@@ -59,7 +74,10 @@ class VisitController extends Controller
                     $visit->check_in_time?->format('Y-m-d H:i:s') ?? '-',
                     $visit->expected_departure_time?->format('Y-m-d H:i:s') ?? '-',
                     $visit->check_out_time?->format('Y-m-d H:i:s') ?? '-',
-                    $visit->currentStatus(),
+                    $status,
+                    $visit->agreed_to_rules ? 'Ja' : 'Nee',
+                    $visit->agreed_at?->format('Y-m-d H:i:s') ?? '-',
+                    $visit->agreed_ip ?? '-',
                 ]);
             }
 
@@ -187,9 +205,9 @@ class VisitController extends Controller
             }
         }
 
-        // Sorting
-        $sortBy = $request->get('sort', 'expected_arrival_time');
-        $sortOrder = $request->get('order', 'desc');
+        // Sorting - fix voor deprecated get()
+        $sortBy = $request->input('sort', 'expected_arrival_time');
+        $sortOrder = $request->input('order', 'desc');
 
         if (in_array($sortBy, ['expected_arrival_time', 'check_in_time', 'check_out_time', 'created_at'])) {
             $query->orderBy($sortBy, $sortOrder);
@@ -270,6 +288,11 @@ class VisitController extends Controller
             $validated['check_out_time'] = now();
         }
 
+        // Standaard NDA akkoord op false bij aanmaken
+        $validated['agreed_to_rules'] = false;
+        $validated['agreed_at'] = null;
+        $validated['agreed_ip'] = null;
+
         $visit = Visit::create($validated);
         $visit->load(['visitor.user', 'employee.user']);
 
@@ -293,6 +316,61 @@ class VisitController extends Controller
         }
 
         return view('visits.show', compact('visit', 'checkinQrUrl'));
+    }
+
+    /**
+     * Toon de check-in pagina met NDA/huisregels
+     */
+    public function showCheckinForm(Visit $visit)
+    {
+        // Controleer of de bezoeker al is ingecheckt
+        if ($visit->check_in_time) {
+            return redirect()->route('visits.show', $visit)
+                ->with('info', 'Deze bezoeker is al ingecheckt.');
+        }
+
+        return view('visits.checkin', compact('visit'));
+    }
+
+    /**
+     * Verwerk de check-in met NDA akkoord
+     */
+    public function processCheckin(Request $request, Visit $visit)
+    {
+        // Valideer dat de bezoeker akkoord gaat met de huisregels/NDA
+        $request->validate([
+            'agreed_to_rules' => 'required|accepted',
+        ], [
+            'agreed_to_rules.required' => 'Je moet akkoord gaan met de huisregels en NDA om in te checken.',
+            'agreed_to_rules.accepted' => 'Je moet de huisregels en NDA accepteren om in te checken.',
+        ]);
+
+        // Voorkom dubbel inchecken
+        if ($visit->check_in_time) {
+            return redirect()->route('visits.show', $visit)
+                ->with('error', 'Deze bezoeker is al ingecheckt.');
+        }
+
+        // Update met check-in en NDA akkoord
+        $visit->update([
+            'check_in_time' => now(),
+            'check_out_time' => null,
+            'agreed_to_rules' => true,
+            'agreed_at' => now(),
+            'agreed_ip' => $request->ip(),
+        ]);
+
+        // Stuur notificatie naar de host employee
+        if ($visit->employee && $visit->visitor && $visit->visitor->user) {
+            Notification::create([
+                'user_id' => $visit->employee->user_id,
+                'title' => 'Bezoeker ingecheckt',
+                'message' => 'Je bezoeker ' . $visit->visitor->user->name . ' is aangekomen en heeft akkoord gegeven op de NDA/huisregels.',
+            ]);
+        }
+
+        return redirect()->route('visits.show', $visit)
+            ->with('success', 'Bezoeker succesvol ingecheckt en NDA akkoord vastgelegd.');
     }
 
     public function checkInViaQr(Visit $visit)
@@ -439,8 +517,7 @@ class VisitController extends Controller
             ->values();
     }
 
-    private function sendMail($visit, MailtrapApiService $mailtrapApiService): void
-    {
+    private function sendMail(Visit $visit, MailtrapApiService $mailtrapApiService): void    {
         $visitor = $visit->visitor?->user;
         $employee = $visit->employee?->user;
         $visitorName = $visitor?->name ?? 'Bezoeker';
@@ -491,5 +568,116 @@ class VisitController extends Controller
                 $recipientMail['html'],
             );
         }
+    }
+    
+
+        /**
+     * Toon de NDA pagina voor visitors (verplicht!)
+     */
+    /**
+ * Toon de NDA pagina voor visitors (verplicht!)
+ */
+    public function showNdaPage(Request $request, Visit $visit): View|RedirectResponse
+    {
+        $user = $request->user();
+        
+        if (!$user || !$user->visitor || $user->visitor->id !== $visit->visitor_id) {
+            abort(403, 'Je hebt geen toegang tot dit bezoek.');
+        }
+
+        if ($visit->agreed_to_rules) {
+            return redirect()->route('visits.myvisits')->with('success', 'Je hebt de NDA al geaccepteerd.');
+        }
+
+        // 🔥 Gewijzigd: view in visits map
+        return view('visits.nda', compact('visit'));
+    }
+
+    /**
+ * Verwerk de NDA acceptatie
+ */
+    public function acceptNda(Request $request, Visit $visit): RedirectResponse
+    {
+        $user = $request->user();
+        
+        if (!$user || !$user->visitor || $user->visitor->id !== $visit->visitor_id) {
+            abort(403, 'Je hebt geen toegang tot dit bezoek.');
+        }
+
+        $request->validate([
+            'agreed_to_rules' => 'required|accepted',
+        ], [
+            'agreed_to_rules.required' => 'Je moet akkoord gaan met de NDA en huisregels.',
+            'agreed_to_rules.accepted' => 'Je moet de NDA en huisregels accepteren om verder te gaan.',
+        ]);
+
+        $visit->update([
+            'agreed_to_rules' => true,
+            'agreed_at' => now(),
+            'agreed_ip' => $request->ip(),
+            'check_in_time' => $visit->check_in_time ?? now(),
+        ]);
+
+        $this->sendNdaConfirmationEmail($visit);
+
+        if ($visit->employee && $visit->visitor && $visit->visitor->user) {
+            Notification::create([
+                'user_id' => $visit->employee->user_id,
+                'title' => '✅ NDA getekend door bezoeker',
+                'message' => $visit->visitor->user->name . ' heeft de NDA/huisregels geaccepteerd.',
+                'link' => route('visits.show', $visit),
+            ]);
+        }
+
+        // 🔥 Gewijzigd: redirect naar /Visits/my in plaats van dashboard
+        return redirect()->route('visits.myvisits')
+            ->with('success', '✅ Bedankt! Je hebt de NDA succesvol geaccepteerd. Welkom!');
+    }
+
+    /**
+     * Stuur NDA bevestiging per email
+     */
+    private function sendNdaConfirmationEmail(Visit $visit): void
+    {
+        $visitor = $visit->visitor?->user;
+        $employee = $visit->employee?->user;
+        
+        if (!$visitor || !$visitor->email) {
+            return;
+        }
+
+        $mailtrapApiService = app(MailtrapApiService::class);
+        
+        $subject = '✅ Bevestiging NDA Akkoord - ' . now()->format('d-m-Y H:i');
+        
+        $text = "Beste {$visitor->name},\n\n"
+            . "Je hebt op " . now()->format('d-m-Y H:i') . " akkoord gegeven op de NDA en huisregels.\n\n"
+            . "📋 Bezoekgegevens:\n"
+            . "- Gastheer: " . ($employee?->name ?? 'Onbekend') . "\n"
+            . "- Datum: " . $visit->expected_arrival_time?->format('d-m-Y H:i') . "\n"
+            . "- Reden: " . ($visit->reason_of_visit ?? 'Niet opgegeven') . "\n"
+            . "- IP-adres: " . $visit->agreed_ip . "\n\n"
+            . "Dit is een officiële bevestiging van je akkoord. Bewaar deze email als bewijs.\n\n"
+            . "Met vriendelijke groet,\n"
+            . "Bezoekersregistratie Systeem";
+        
+        $html = "<p>Beste {$visitor->name},</p>"
+            . "<p>Je hebt op <strong>" . now()->format('d-m-Y H:i') . "</strong> akkoord gegeven op de NDA en huisregels.</p>"
+            . "<h3>📋 Bezoekgegevens:</h3>"
+            . "<ul>"
+            . "<li><strong>Gastheer:</strong> " . ($employee?->name ?? 'Onbekend') . "</li>"
+            . "<li><strong>Datum:</strong> " . $visit->expected_arrival_time?->format('d-m-Y H:i') . "</li>"
+            . "<li><strong>Reden:</strong> " . ($visit->reason_of_visit ?? 'Niet opgegeven') . "</li>"
+            . "<li><strong>IP-adres:</strong> " . $visit->agreed_ip . "</li>"
+            . "</ul>"
+            . "<p><em>Dit is een officiële bevestiging van je akkoord. Bewaar deze email als bewijs.</em></p>"
+            . "<p>Met vriendelijke groet,<br>Bezoekersregistratie Systeem</p>";
+        
+        $mailtrapApiService->send(
+            $visitor->email,
+            $subject,
+            $text,
+            $html
+        );
     }
 }
