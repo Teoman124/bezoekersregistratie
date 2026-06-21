@@ -23,6 +23,7 @@ class DashboardController extends Controller
                 $this->getCoreStats(),
                 $this->getVisitOverviewStats($today, $yesterday, $startOfWeek),
                 $this->getBehaviorStats(),
+                $this->getPunctualityStats($today), 
             ),
             'chartsData' => [
                 'visitsPerDay' => $this->getVisitsPerDay(),
@@ -31,6 +32,48 @@ class DashboardController extends Controller
                 'stayDurationStats' => $this->getStayDurationStats(),
             ],
         ]);
+    }
+
+
+    private function getPunctualityStats(Carbon $today): array
+    {
+        // Haal de 5 meest recent ingecheckte bezoeken van vandaag op
+        $recentVisits = Visit::with('visitor.user')
+            ->whereDate('expected_arrival_time', $today)
+            ->whereNotNull('check_in_time')
+            ->orderByDesc('check_in_time')
+            ->limit(5)
+            ->get();
+
+        $punctualityList = $recentVisits->map(function (Visit $visit) {
+            $expected = $visit->expected_arrival_time;
+            $actual = $visit->check_in_time;
+            
+            // Bereken verschil in minuten. 'false' zorgt voor negatieve waarden als ze te vroeg zijn.
+            $diffInMinutes = (int) $expected->diffInMinutes($actual, false); 
+            
+            $statusText = 'Precies op tijd';
+            $colorClass = 'text-green-600 dark:text-green-400 font-semibold'; // Op tijd
+
+            if ($diffInMinutes > 0) {
+                $statusText = "+{$diffInMinutes} min (te laat)";
+                $colorClass = 'text-red-500 dark:text-red-400 font-semibold';
+            } elseif ($diffInMinutes < 0) {
+                $statusText = "{$diffInMinutes} min (te vroeg)";
+                $colorClass = 'text-blue-500 dark:text-blue-400 font-semibold';
+            }
+
+            return [
+                'name' => $visit->visitor?->user?->name ?? 'Onbekend',
+                'status_text' => $statusText,
+                'color_class' => $colorClass,
+                'time' => $actual->format('H:i'),
+            ];
+        });
+
+        return [
+            'recent_punctuality' => $punctualityList,
+        ];
     }
 
     private function getCoreStats(): array

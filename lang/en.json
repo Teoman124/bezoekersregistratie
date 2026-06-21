@@ -1,0 +1,12 @@
+{
+    "Welkom Kiosk": "Welcome Kiosk",
+    "Welkom": "Welcome",
+    "Vul je naam in om je aan te melden voor je afspraak.": "Enter your name to check in for your appointment.",
+    "Je volledige naam": "Your full name",
+    "Aanmelden": "Check in",
+    "Succesvol Aangemeld": "Successfully Checked In",
+    "Aanmelding Gelukt!": "Check-in Successful!",
+    "Welkom. We hebben :name een seintje gegeven dat je er bent. Neem gerust even plaats in de hal.": "Welcome. We have notified :name that you have arrived. Please take a seat in the lobby.",
+    "Dit scherm keert automatisch terug...": "This screen will return automatically...",
+    "We konden geen afspraak vinden onder deze naam op dit tijdstip. Controleer de spelling of meld je bij de receptie.": "We could not find an appointment under this name at this time. Please check your spelling or report to the reception."
+}

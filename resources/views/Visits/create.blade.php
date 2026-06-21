@@ -39,8 +39,15 @@
 
             <div>
                 <label for="reason_of_visit" class="block text-sm font-medium mb-1">Reden van bezoek</label>
-                <textarea name="reason_of_visit" id="reason_of_visit" rows="4"
+                <textarea name="reason_of_visit" id="reason_of_visit" rows="3"
                     class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900">{{ old('reason_of_visit') }}</textarea>
+            </div>
+
+            <div>
+                <label for="route_description" class="block text-sm font-medium mb-1">Routebeschrijving / Bericht voor bezoeker (optioneel)</label>
+                <textarea name="route_description" id="route_description" rows="3" placeholder="Bijv: Parkeer op P1 en meld je bij de hoofdingang."
+                    class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900">{{ old('route_description') }}</textarea>
+                <p class="text-xs text-gray-500 mt-1">Deze tekst wordt direct meegestuurd in de uitnodigingsmail naar de bezoeker.</p>
             </div>
 
             <div>
@@ -56,26 +63,3 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label for="expected_arrival_time" class="block text-sm font-medium mb-1">Verwachte aankomst</label>
-                    <input type="datetime-local" name="expected_arrival_time" id="expected_arrival_time"
-                        value="{{ old('expected_arrival_time') }}" required
-                        class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900" />
-                </div>
-
-                <div>
-                    <label for="expected_departure_time" class="block text-sm font-medium mb-1">Verwachte
-                        vertrek</label>
-                    <input type="datetime-local" name="expected_departure_time" id="expected_departure_time"
-                        value="{{ old('expected_departure_time') }}"
-                        class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900" />
-                </div>
-            </div>
-
-            <div class="flex gap-3">
-                <button type="submit"
-                    class="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white">Opslaan</button>
-                <a href="{{ route('visits.index') }}"
-                    class="px-4 py-2 rounded-md border border-gray-300 dark:border-gray-700">Annuleren</a>
-            </div>
-        </form>
-    </div>
-</x-layouts.app>

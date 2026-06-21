@@ -11,6 +11,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\VisitController;
 use App\Http\Controllers\VisitorController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\KioskController;
 
 Route::view('/', 'home')->name('home');
 
@@ -134,5 +135,10 @@ Route::middleware(['auth', 'check.role:admin,employee,visitor'])->group(function
     Route::get('/Mailbox/{mailboxMessage}', [MailboxController::class, 'show'])->name('mailbox.show');
     Route::delete('/Mailbox/{mailboxMessage}', [MailboxController::class, 'destroy'])->name('mailbox.destroy');
 });
+// Kiosk
+Route::get('/kiosk', [KioskController::class, 'index'])->name('kiosk.index');
+Route::post('/kiosk/checkin', [KioskController::class, 'checkIn'])->name('kiosk.checkin');
+Route::get('/kiosk/success', [KioskController::class, 'success'])->name('kiosk.success');
+Route::get('/kiosk/reset', [KioskController::class, 'reset'])->name('kiosk.reset');
 require __DIR__.'/auth.php';
 // niet meer veranderen nu T_T

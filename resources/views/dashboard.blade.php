@@ -169,25 +169,54 @@
         </div>
     </div>
 
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-        <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">{{ __('Snel naar beheer') }}</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            <a href="{{ route('users.create') }}"
-                class="px-4 py-3 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">{{ __('Nieuwe gebruiker') }}</a>
-            <a href="{{ route('employees.create') }}"
-                class="px-4 py-3 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">{{ __('Nieuwe medewerker') }}</a>
-            <a href="{{ route('visitors.create') }}"
-                class="px-4 py-3 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">{{ __('Nieuwe bezoeker') }}</a>
-            <a href="{{ route('visits.active') }}"
-                class="px-4 py-3 rounded-md border border-rose-200 text-rose-700 dark:border-rose-800 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-900/20">{{ __('Wie is er nu in het pand?') }}</a>
-            <a href="{{ route('departments.index') }}"
-                class="px-4 py-3 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">{{ __('Afdelingen') }}
-                ({{ $stats['departments'] }})</a>
-            <a href="{{ route('notifications.index') }}"
-                class="px-4 py-3 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">{{ __('Notificaties') }}</a>
-            <a href="{{ route('visits.create') }}"
-                class="px-4 py-3 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">{{ __('Nieuw bezoek plannen') }}</a>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 lg:col-span-2">
+            <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">{{ __('Snel naar beheer') }}</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <a href="{{ route('users.create') }}"
+                    class="px-4 py-3 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">{{ __('Nieuwe gebruiker') }}</a>
+                <a href="{{ route('employees.create') }}"
+                    class="px-4 py-3 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">{{ __('Nieuwe medewerker') }}</a>
+                <a href="{{ route('visitors.create') }}"
+                    class="px-4 py-3 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">{{ __('Nieuwe bezoeker') }}</a>
+                <a href="{{ route('visits.active') }}"
+                    class="px-4 py-3 rounded-md border border-rose-200 text-rose-700 dark:border-rose-800 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-900/20">{{ __('Wie is er nu in het pand?') }}</a>
+                <a href="{{ route('departments.index') }}"
+                    class="px-4 py-3 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">{{ __('Afdelingen') }}
+                    ({{ $stats['departments'] }})</a>
+                <a href="{{ route('notifications.index') }}"
+                    class="px-4 py-3 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">{{ __('Notificaties') }}</a>
+                <a href="{{ route('visits.create') }}"
+                    class="px-4 py-3 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 sm:col-span-2">{{ __('Nieuw bezoek plannen') }}</a>
+            </div>
         </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 lg:col-span-1">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100">{{ __('Aankomsten vandaag') }}</h2>
+                <span class="text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-2 py-1 rounded-full">Laatste 5</span>
+            </div>
+            
+            <ul class="space-y-4">
+                @forelse($stats['recent_punctuality'] as $punctuality)
+                    <li class="flex flex-col border-b border-gray-100 dark:border-gray-700 pb-3 last:border-0 last:pb-0">
+                        <div class="flex justify-between items-start">
+                            <span class="text-sm font-medium text-gray-800 dark:text-gray-200">{{ $punctuality['name'] }}</span>
+                            <span class="text-xs text-gray-500 dark:text-gray-400">{{ $punctuality['time'] }}</span>
+                        </div>
+                        <div class="text-xs mt-1 {{ $punctuality['color_class'] }}">
+                            {{ $punctuality['status_text'] }}
+                        </div>
+                    </li>
+                @empty
+                    <li class="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
+                        {{ __('Nog geen bezoeken ingecheckt vandaag.') }}
+                    </li>
+                @endforelse
+            </ul>
+        </div>
+
     </div>
     @else
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
