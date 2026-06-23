@@ -20,13 +20,58 @@
         </div>
     </div>
 
-    <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-        <div class="border-b border-gray-200 dark:border-gray-700 p-4 flex flex-wrap gap-2">
-            <a href="{{ route('visits.index') }}" class="px-3 py-1.5 rounded-full text-sm border {{ request('status') ? 'border-gray-200 dark:border-gray-700' : 'border-blue-600 text-blue-600' }}">Alles</a>
-            <a href="{{ route('visits.index', ['status' => 'in']) }}" class="px-3 py-1.5 rounded-full text-sm border {{ request('status') === 'in' ? 'border-blue-600 text-blue-600' : 'border-gray-200 dark:border-gray-700' }}">Actief</a>
-            <a href="{{ route('visits.index', ['status' => 'out']) }}" class="px-3 py-1.5 rounded-full text-sm border {{ request('status') === 'out' ? 'border-blue-600 text-blue-600' : 'border-gray-200 dark:border-gray-700' }}">Uitgecheckt</a>
+    <form method="GET" action="{{ route('visits.index') }}" class="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 mb-6 flex flex-wrap gap-4 items-end">
+        <div class="flex-1 min-w-[200px]">
+            <label for="search" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Zoeken (Naam)</label>
+            <input type="text" name="search" id="search" value="{{ request('search') }}" placeholder="Bezoeker of gastheer..."
+                class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 text-sm">
         </div>
 
+        <div>
+            <label for="date" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Datum</label>
+            <input type="date" name="date" id="date" value="{{ request('date') }}"
+                class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 text-sm">
+        </div>
+
+        <div>
+            <label for="department_id" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Afdeling</label>
+            <select name="department_id" id="department_id" class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 text-sm">
+                <option value="">Alle afdelingen</option>
+                @foreach($departments as $dept)
+                    <option value="{{ $dept->id }}" @selected(request('department_id') == $dept->id)>{{ $dept->name }}</option>
+                @endforeach
+            </select>
+        </div>
+
+        <div>
+            <label for="host_id" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Gastheer</label>
+            <select name="host_id" id="host_id" class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 text-sm">
+                <option value="">Alle gastheren</option>
+                @foreach($employees as $emp)
+                    <option value="{{ $emp->id }}" @selected(request('host_id') == $emp->id)>{{ $emp->user?->name }}</option>
+                @endforeach
+            </select>
+        </div>
+
+        <div>
+            <label for="status" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
+            <select name="status" id="status" class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 text-sm">
+                <option value="">Alles</option>
+                <option value="planned" @selected(request('status') === 'planned')>Ingepland</option>
+                <option value="in" @selected(request('status') === 'in')>Actief</option>
+                <option value="out" @selected(request('status') === 'out')>Uitgecheckt</option>
+            </select>
+        </div>
+
+        <div class="flex gap-2">
+            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700">Filter</button>
+            @if(request()->anyFilled(['search', 'date', 'department_id', 'host_id', 'status']))
+                <a href="{{ route('visits.index') }}" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-md text-sm hover:bg-gray-300 dark:hover:bg-gray-600">Wis</a>
+            @endif
+        </div>
+    </form>
+
+    <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
         <div class="overflow-x-auto">
             <table class="w-full text-left text-sm">
                 <thead class="bg-gray-50 dark:bg-gray-700/40 text-gray-600 dark:text-gray-300">
@@ -87,7 +132,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">Geen bezoeken gevonden.</td>
+                        <td colspan="7" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">Geen bezoeken gevonden die matchen met deze filters.</td>
                     </tr>
                     @endforelse
                 </tbody>

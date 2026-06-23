@@ -8,6 +8,7 @@ use App\Models\Employee;
 use App\Models\Notification;
 use App\Models\Visit;
 use App\Models\Visitor;
+use App\Models\Department;
 use App\Services\MailtrapApiService;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
@@ -147,23 +148,60 @@ class VisitController extends Controller
         ]);
     }
 
-    public function index(Request $request)
+  public function index(Request $request)
     {
-        $query = Visit::with(['visitor.user', 'employee.user']);
+        // Haal bezoeken op met de benodigde relaties
+        $query = Visit::with(['visitor.user', 'employee.user', 'employee.department']);
 
+        // 1. Zoeken op naam (bezoeker of gastheer)
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('visitor.user', function ($subQ) use ($search) {
+                    $subQ->where('name', 'LIKE', '%' . $search . '%');
+                })->orWhereHas('employee.user', function ($subQ) use ($search) {
+                    $subQ->where('name', 'LIKE', '%' . $search . '%');
+                });
+            });
+        }
+
+        // 2. Filteren op Datum
+        if ($request->filled('date')) {
+            $query->whereDate('expected_arrival_time', $request->date);
+        }
+
+        // 3. Filteren op Afdeling
+        if ($request->filled('department_id')) {
+            $query->whereHas('employee', function ($q) use ($request) {
+                $q->where('department_id', $request->department_id);
+            });
+        }
+
+        // 4. Filteren op Gastheer (Host)
+        if ($request->filled('host_id')) {
+            $query->where('host_employee_id', $request->host_id);
+        }
+
+        // 5. Filteren op Status (Inclusief de acties uit je oude code)
         if ($request->filled('status')) {
-            if ($request->status === 'in') {
-                $query->active();
-            }
-
-            if ($request->status === 'out') {
+            if ($request->status === 'planned') {
+                $query->whereNull('check_in_time');
+            } elseif ($request->status === 'in') {
+                $query->active(); // Roept jouw bestaande scopeActive() aan
+            } elseif ($request->status === 'out') {
                 $query->whereNotNull('check_out_time');
             }
         }
 
-        $visits = $query->get();
+        // Sorteer op meest recente (of toekomstige) bezoeken eerst
+        $visits = $query->orderBy('expected_arrival_time', 'desc')->get();
 
-        return view('visits.index', compact('visits'));
+        // Haal extra data op die we nodig hebben voor de dropdown-filters in de view
+        $departments = Department::orderBy('name')->get();
+        $employees = Employee::with('user')->get()->sortBy(fn ($e) => $e->user?->name);
+
+        return view('visits.index', compact('visits', 'departments', 'employees'));
+    
     }
 
     public function active(): View
