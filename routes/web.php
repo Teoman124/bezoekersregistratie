@@ -51,6 +51,7 @@ Route::middleware(['auth'])->group(function () {
     Route::put('settings/appearance', [Settings\AppearanceController::class, 'update'])->name('settings.appearance.update');
 });
 
+ // Bezoeken
 Route::get('/Visits/my', [VisitController::class, 'myvisits'])
     ->middleware(['auth', 'check.role:employee,visitor', 'set.locale'])
     ->name('visits.myvisits');
@@ -66,7 +67,7 @@ Route::get('/Visits/{visit}', [VisitController::class, 'show'])
     ->middleware(['auth', 'check.role:admin,employee,visitor', 'set.locale']);
 
 Route::middleware(['auth', 'check.role:admin,employee'])->group(function () {
-    // Bezoeken
+   
     Route::get('/Visits', [VisitController::class, 'index'])->name('visits.index');
     Route::get('/Visits/active', [VisitController::class, 'active'])->name('visits.active');
     Route::get('/Visits/active/export', [VisitController::class, 'activeExport'])->name('visits.active.export');
