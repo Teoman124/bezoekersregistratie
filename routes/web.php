@@ -164,6 +164,12 @@ Route::post('/kiosk/checkin', [KioskController::class, 'checkIn'])->name('kiosk.
 Route::get('/kiosk/success', [KioskController::class, 'success'])->name('kiosk.success');
 Route::get('/kiosk/reset', [KioskController::class, 'reset'])->name('kiosk.reset');
 
+Route::middleware(['auth:sanctum'])->prefix('api')->group(function () {
+    // … existing notification routes …
+
+    Route::get('/active-visits', [App\Http\Controllers\Api\VisitController::class, 'active'])
+        ->name('api.active-visits');
+});
 
 require __DIR__.'/auth.php';
 
