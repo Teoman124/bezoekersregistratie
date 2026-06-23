@@ -1,0 +1,93 @@
+ASSESSMENT OEFENBLAD - ROUTING, CONTROLLER, VALIDATIE, MODEL, DATABASE, VIEW
+
+1. Routing - waar komt een verzoek binnen?
+
+Vraag: Laat eens zien in welk bestand jullie routes staan. Wat is het verschil tussen web.php en api.php en welke gebruiken jullie?
+Antwoord: De belangrijkste routes staan in routes/web.php. Dat bestand gebruiken we voor browserpagina's, Blade views, sessies, CSRF en normale web-authenticatie. routes/api.php is bedoeld voor stateless JSON endpoints zonder sessiegedrag. In deze applicatie gebruiken we vooral web.php, omdat de schermen in Blade zijn gebouwd en via login/sessie werken. Er is wel een API-stijl route voor notifications, maar die staat nu in web.php onder een /api prefix.
+
+Vraag: Wijs een route aan en leg uit: wat gebeurt er als ik deze URL in de browser intik?
+Antwoord: Bijvoorbeeld Route::get('/Visits/{visit}', [VisitController::class, 'show'])->name('visits.show'). Als iemand die URL opent, bekijkt Laravel de route in routes/web.php, controleert de middleware, haalt de parameter {visit} uit de URL, maakt daar automatisch een Visit-model van door route-model-binding, en roept daarna VisitController@show aan. Die methode haalt de data op en geeft de view visits.show terug.
+
+Vraag: Hoe weet Laravel welke controller en welke methode bij deze route hoort?
+Antwoord: Dat staat direct in de route-definitie. Bijvoorbeeld [VisitController::class, 'show'] betekent: gebruik de VisitController en roep de show-methode aan. Laravel koppelt de URL dus aan de controller via die array.
+
+Vraag: Gebruiken jullie route-parameters of route-model-binding? Laat zien waar en leg uit wat dat oplevert.
+Antwoord: Ja. We gebruiken route-parameters zoals {visit} en {mailboxMessage}. Laravel gebruikt route-model-binding zodat in de controller direct een model binnenkomt, bijvoorbeeld show(Visit $visit) of show(MailboxMessage $mailboxMessage). Daardoor hoef je niet handmatig Visit::find($id) of MailboxMessage::find($id) te schrijven. Laravel doet dat automatisch en geeft meteen een 404 als het record niet bestaat.
+
+2. Controller - wat stuurt het verzoek aan?
+
+Vraag: Open de controller die bij deze route hoort. Wat is de taak van deze methode?
+Antwoord: Bij visits.show is dat VisitController@show. Die methode krijgt het Visit-model binnen, maakt eventueel een tijdelijke QR-link aan als de bezoeker nog niet is ingecheckt, en geeft daarna de Blade-view visits.show terug. Bij mailbox.index is het MailboxController@index: die haalt inbox- of verzonden berichten op en geeft mailbox.index terug.
+
+Vraag: Loop hardop door deze methode heen: wat gebeurt er als eerste, wat daarna?
+Antwoord: Neem VisitController@store als voorbeeld. Eerst komt de Form Request binnen en haalt Laravel de gevalideerde data op met $request->validated(). Daarna zet de controller de status om naar de juiste check-in/check-out waarden. Daarna vult hij standaardwaarden voor NDA-akkoord in, slaat het record op met Visit::create($validated), laadt relaties in, verstuurt een mail via MailtrapApiService en stuurt tenslotte een redirect terug met een succesmelding.
+
+Vraag: Waarom hebben jullie deze logica in de controller gezet en niet ergens anders?
+Antwoord: Omdat de controller hier de verkeersregelaar is: hij ontvangt het request, kiest wat er moet gebeuren, en stuurt een response terug. Korte flowlogica zoals validatie-afhandeling, redirects, of het aanmaken van een record past hier goed. De datalogica zelf zit zoveel mogelijk in modellen, relaties of aparte requests/services.
+
+Vraag: Zit er logica in deze controller die volgens jullie eigenlijk in een model of aparte klasse hoort? Waarom wel/niet?
+Antwoord: Ja, sommige stukken kunnen verder worden opgesplitst. Bijvoorbeeld het bepalen van status of het opbouwen van notificatie- en mail-teksten zou je ook in een aparte service of action class kunnen zetten. Nu staat het nog deels in de controller omdat het project dat zo al vaker doet en het voor deze omvang nog leesbaar blijft.
+
+3. Validatie - waar wordt de invoer gecontroleerd?
+
+Vraag: Waar in jullie applicatie wordt gecontroleerd of de ingevulde gegevens kloppen? Wijs het aan.
+Antwoord: Dat gebeurt op twee manieren. Voor grotere formulieren gebruiken we Form Requests, zoals app/Http/Requests/StoreVisitRequest.php en app/Http/Requests/StoreVisitorRequest.php. Voor kleinere acties gebruiken we soms inline validatie met $request->validate(), bijvoorbeeld in MailboxController@store en in sommige check-in methodes.
+
+Vraag: Gebruiken jullie $request->validate() of een aparte Form Request? Waarom die keuze?
+Antwoord: Allebei, maar vooral Form Requests voor belangrijkere formulieren. Dat is overzichtelijker, beter herbruikbaar en schoner in de controller. Inline validatie gebruiken we alleen als het kort en simpel is. Het project heeft beide patronen al, dus we volgen wat er al bestaat.
+
+Vraag: Wat gebeurt er met de gebruiker als de validatie faalt? Waar gaat hij dan naartoe en wat ziet hij?
+Antwoord: Laravel stuurt de gebruiker automatisch terug naar het vorige scherm. De ingevulde gegevens blijven meestal behouden via old input en de foutmeldingen worden getoond in de view. De controller hoeft daar meestal niets extra's voor te doen.
+
+Vraag: Waarom is validatie aan de serverkant nodig, ook als jullie het in de frontend al checken?
+Antwoord: Frontend-validatie is alleen voor gebruiksgemak. Die kan worden omzeild. Server-side validatie is de echte controle, omdat alleen de server bepaalt wat veilig en geldig is voordat data wordt opgeslagen.
+
+4. Model & opslag - waar worden de gegevens bewaard?
+
+Vraag: Welk model hoort bij deze functionaliteit en met welke databasetabel praat dat model?
+Antwoord: Voor bezoeken is dat het Visit-model met de tabel visits. Voor mailboxberichten is dat het MailboxMessage-model met de tabel mailbox_messages. Voor notificaties is dat het Notification-model met de tabel notifications. User praat standaard met de users-tabel.
+
+Vraag: Laat zien waar een nieuw record wordt aangemaakt of opgeslagen. Welke regel doet dat precies?
+Antwoord: In VisitController@store gebeurt dat met Visit::create($validated). In MailboxController@store gebeurt dat met MailboxMessage::create([...]). In veel andere acties wordt een bestaande rij geupdate met $model->update([...]).
+
+Vraag: Hoe weet Laravel met welke tabel en kolommen dit model werkt?
+Antwoord: Meestal via conventies. User hoort bij users, Visit bij visits, Notification bij notifications. Als de tabelnaam afwijkt, zet je die expliciet in het model, zoals protected $table = 'mailbox_messages' in MailboxMessage. Welke velden je massaal mag invullen staat in $fillable, en typecasts staan in $casts.
+
+Vraag: Hebben jullie relaties tussen tabellen? Wijs aan waar die relatie is gedefinieerd en hoe jullie die gebruiken.
+Antwoord: Ja. Visit belongsTo Visitor en belongsTo Employee. Visitor heeft hasMany Visits. Employee heeft hasMany Visits. User heeft hasOne Visitor. MailboxMessage belongsTo User als sender en recipient. Notification belongsTo User. In controllers gebruiken we die relaties via eager loading, bijvoorbeeld with(['visitor.user', 'employee.user']) of with(['sender', 'recipient']).
+
+5. Database & migraties - hoe is de structuur opgebouwd?
+
+Vraag: Waar staat beschreven hoe jullie tabellen eruitzien? Laat een migratie zien.
+Antwoord: Dat staat in database/migrations. Bijvoorbeeld de visits-tabel staat in 2026_04_13_090010_create_visits_table.php en de mailbox_messages-tabel in 2026_05_18_122000_create_mailbox_messages_table.php. Daar zie je de kolommen, foreign keys en defaults.
+
+Vraag: Stel ik wil een kolom toevoegen aan een tabel — wat zouden jullie dan doen?
+Antwoord: Dan maken we een nieuwe migratie aan, in plaats van een oude migratie aan te passen. Laravel werkt migratiegeschiedenis bij, dus je voegt nieuwe wijzigingen toe met een aparte migration. Als een bestaande kolom wordt aangepast, moeten we ook de oude eigenschappen meegeven zodat er niets verdwijnt.
+
+Vraag: Hoe komen jullie gegevens van een formulier uiteindelijk in de database terecht? Beschrijf de hele route van knop tot tabel.
+Antwoord: De gebruiker vult een formulier in en klikt op verzenden. De route stuurt het request naar een controller-methode. Daar wordt de invoer gevalideerd. Daarna maakt de controller een array met de juiste gegevens en slaat die op met een model, bijvoorbeeld Visit::create() of MailboxMessage::create(). Het model schrijft naar de tabel die in de migratie is gedefinieerd. Daarna krijgt de gebruiker een redirect of een view terug.
+
+6. View / response - wat krijgt de gebruiker terug?
+
+Vraag: Welk bestand bepaalt wat de gebruiker op het scherm ziet na deze actie?
+Antwoord: Dat is de Blade-view die de controller teruggeeft. Bijvoorbeeld return view('visits.show', compact('visit', 'checkinQrUrl')); of return view('mailbox.index', compact(...)). Die view bepaalt de HTML en dus wat de gebruiker ziet.
+
+Vraag: Hoe komen de gegevens uit de controller in de Blade-view terecht?
+Antwoord: Via return view(..., compact(...)) of een array met variabelen. Alles wat de controller meegeeft, kun je daarna in Blade gebruiken als variabele, bijvoorbeeld $visit, $notifications, $folder, $inboxCount of $sentCount.
+
+Vraag: Wijs een plek aan waar jullie data uit de database tonen in de view.
+Antwoord: In resources/views/Visits/MyVisits.blade.php tonen we bijvoorbeeld $visit->visitor?->user?->name en de status. In resources/views/Notifications/index.blade.php tonen we de notificatie-titel, message en gelezen/ongelezen status. In resources/views/mailbox/index.blade.php tonen we mailboxberichten met titel, afzender en ontvanger.
+
+7. Overkoepelend begrip - de complete flow
+
+Vraag: Beschrijf in je eigen woorden de complete reis van een verzoek: van het moment dat een gebruiker op een knop klikt tot het moment dat hij een reactie ziet. Noem elke laag die het passeert.
+Antwoord: De gebruiker klikt op een knop in de Blade-view. De browser stuurt een HTTP-verzoek naar een route. Laravel zoekt de route in routes/web.php of routes/auth.php. Daarna worden middleware en autorisatie gecontroleerd. Als er route-model-binding is, zet Laravel de URL-parameter om naar een model. De controller ontvangt het request en verwerkt de logica. Als nodig wordt er gevalideerd, opgeslagen in een model, en daarmee in de database. Daarna maakt de controller een redirect of view-response. De Blade-view krijgt data terug en de gebruiker ziet het resultaat in de browser.
+
+Vraag: Als ik je vertel "het opslaan werkt niet", waar zou je dan als eerste gaan kijken en waarom?
+Antwoord: Eerst kijk ik naar de route, de controller-methode en de validatie. Daarna check ik of de model $fillable goed staat, of de tabel en kolommen echt bestaan in de migratie, en of er geen foreign key of validation error is. Dat zijn de meest waarschijnlijke plekken waar opslag fout kan gaan.
+
+Vraag: Welk deel van deze applicatie hebben jullie zelf gebouwd en welk deel regelt Laravel automatisch voor jullie?
+Antwoord: Zelf gebouwd zijn de routes, controllers, modellen, views, validatie, relaties, migraties en de businesslogica. Laravel regelt automatisch de routing-engine, request lifecycle, session handling, CSRF-bescherming, route-model-binding, validatie-afhandeling, Eloquent ORM, redirects en het tonen van validation errors.
+
+Vraag: Als je één onderdeel van jullie code opnieuw zou mogen bouwen, wat zou dat zijn en waarom?
+Antwoord: Een logisch antwoord is de controllerlaag rond visits en mailbox nog verder opsplitsen in aparte actions/services. Dan wordt de controller kleiner en blijft de businesslogica makkelijker te testen en uit te leggen. Het huidige project werkt al, maar sommige methodes zijn best lang en doen meerdere dingen tegelijk.

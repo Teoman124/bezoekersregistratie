@@ -13,8 +13,33 @@
             <div class="ml-4 font-semibold text-xl text-blue-600 dark:text-blue-400">{{ config('app.name') }}</div>
         </div>
 
-        <!-- Right side: Theme toggle, Search, notifications, profile -->
+        <!-- Right side: Theme toggle, language, search, notifications, profile -->
         <div class="flex items-center space-x-4">
+            <!-- Language Toggle -->
+            <div x-data="{ open: false }" class="relative">
+                <button @click="open = !open"
+                    class="p-2 rounded-md text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 focus:outline-none transition-colors duration-200"
+                    :aria-expanded="open.toString()">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 5h12M9 3v2m1.481 10.242L13 16.25m-2.519-2.008A8.959 8.959 0 019 8m7.5 8a8.963 8.963 0 01-1.493-4.95M5 19h14M12 3a9 9 0 110 18 9 9 0 010-18z" />
+                    </svg>
+                </button>
+
+                <div x-show="open" @click.away="open = false" x-transition
+                    class="absolute border border-gray-200 dark:border-gray-700 right-0 mt-2 w-32 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-50">
+                    <a href="{{ route('lang.switch', ['locale' => 'nl']) }}"
+                        class="block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 {{ app()->getLocale() === 'nl' ? 'text-blue-700 dark:text-blue-400 font-medium' : 'text-gray-700 dark:text-gray-300' }}">
+                        NL
+                    </a>
+                    <a href="{{ route('lang.switch', ['locale' => 'en']) }}"
+                        class="block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 {{ app()->getLocale() === 'en' ? 'text-blue-700 dark:text-blue-400 font-medium' : 'text-gray-700 dark:text-gray-300' }}">
+                        EN
+                    </a>
+                </div>
+            </div>
+
             <!-- Theme Toggle -->
             <div x-data="{ open: false }" class="relative">
                 <button @click="open = !open"
@@ -130,7 +155,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                                 </svg>
-                                Logout
+                                {{ __('Sign out') }}
                             </div>
                         </button>
                     </form>

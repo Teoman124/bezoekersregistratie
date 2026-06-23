@@ -12,7 +12,7 @@
             <form method="POST" action="{{ route('visitor.register.store') }}" class="space-y-3">
                 @csrf
                 <div>
-                    <x-forms.input label="Name" name="name" type="text" placeholder="{{ __('Your Name') }}" autofocus />
+                    <x-forms.input label="{{ __('Name') }}" name="name" type="text" placeholder="{{ __('Your Name') }}" autofocus />
                 </div>
 
                 <x-button type="primary" class="w-full">{{ __('Continue as Visitor') }}</x-button>

@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\NotificationController as ApiNotificationController
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\KioskController;
 use App\Http\Controllers\MailboxController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Settings;
@@ -11,15 +12,15 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\VisitController;
 use App\Http\Controllers\VisitorController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\KioskController;
 
-Route::view('/', 'home')->name('home');
+Route::view('/', 'home')->middleware('set.locale')->name('home');
 
 Route::get('/lang/{locale}', function (string $locale) {
     if (! in_array($locale, ['en', 'nl'])) {
         abort(400);
     }
     session()->put('locale', $locale);
+
     return back();
 })->name('lang.switch');
 
@@ -32,7 +33,7 @@ Route::get('dashboard', [DashboardController::class, 'index'])
     ->name('dashboard');
 
 // NDA Routes voor visitors
-Route::middleware(['auth', 'check.role:visitor'])->group(function () {
+Route::middleware(['auth', 'check.role:visitor', 'set.locale'])->group(function () {
     Route::get('/visits/{visit}/nda', [VisitController::class, 'showNdaPage'])
         ->name('visitor.nda.show');
 
@@ -52,7 +53,7 @@ Route::middleware(['auth'])->group(function () {
 
  // Bezoeken
 Route::get('/Visits/my', [VisitController::class, 'myvisits'])
-    ->middleware(['auth', 'check.role:employee,visitor'])
+    ->middleware(['auth', 'check.role:employee,visitor', 'set.locale'])
     ->name('visits.myvisits');
 Route::get('/Visits/history', [VisitController::class, 'history'])
     ->middleware(['auth', 'check.role:admin,employee'])
@@ -63,7 +64,7 @@ Route::get('/Visits/export', [VisitController::class, 'export'])
 Route::get('/Visits/{visit}', [VisitController::class, 'show'])
     ->whereNumber('visit')
     ->name('visits.show')
-    ->middleware(['auth', 'check.role:admin,employee,visitor']);
+    ->middleware(['auth', 'check.role:admin,employee,visitor', 'set.locale']);
 
 Route::middleware(['auth', 'check.role:admin,employee'])->group(function () {
    
@@ -127,7 +128,7 @@ Route::middleware(['auth', 'check.role:admin,employee'])->group(function () {
 });
 
 // Notificaties
-Route::middleware(['auth', 'check.role:admin,employee,visitor'])->group(function () {
+Route::middleware(['auth', 'check.role:admin,employee,visitor', 'set.locale'])->group(function () {
     Route::get('/Notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::get('/Notifications/{notification}', [NotificationController::class, 'show'])->name('notifications.show');
     Route::post('/Notifications/{notification}/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
@@ -150,7 +151,7 @@ Route::middleware(['auth:sanctum'])->prefix('api')->group(function () {
 });
 
 // Mailbox
-Route::middleware(['auth', 'check.role:admin,employee,visitor'])->group(function () {
+Route::middleware(['auth', 'check.role:admin,employee,visitor', 'set.locale'])->group(function () {
     Route::get('/Mailbox', [MailboxController::class, 'index'])->name('mailbox.index');
     Route::get('/Mailbox/create', [MailboxController::class, 'create'])->name('mailbox.create');
     Route::post('/Mailbox', [MailboxController::class, 'store'])->name('mailbox.store');
@@ -164,5 +165,5 @@ Route::get('/kiosk/success', [KioskController::class, 'success'])->name('kiosk.s
 Route::get('/kiosk/reset', [KioskController::class, 'reset'])->name('kiosk.reset');
 require __DIR__.'/auth.php';
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';
 // niet meer veranderen nu T_T

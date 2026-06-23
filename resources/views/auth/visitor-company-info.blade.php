@@ -12,7 +12,7 @@
             <form method="POST" action="{{ route('visitor.company-info.store') }}" class="space-y-4">
                 @csrf
                 <div>
-                    <x-forms.input label="Company Name" name="company_name" type="text"
+                    <x-forms.input label="{{ __('Company Name') }}" name="company_name" type="text"
                         placeholder="{{ __('Your Company Name') }}" autofocus />
                 </div>
 
