@@ -263,19 +263,19 @@ class VisitController extends Controller
         $query->where(function ($q) use ($user) {
             $heeftProfiel = false;
 
-            // 1. Heeft deze gebruiker een bezoekersprofiel?
+            // Heeft deze gebruiker een bezoekersprofiel?
             if ($user->visitor) {
                 $q->orWhere('visitor_id', $user->visitor->id);
                 $heeftProfiel = true;
             }
 
-            // 2. Heeft deze gebruiker een medewerkersprofiel?
+            // Heeft deze gebruiker een medewerkersprofiel?
             if ($user->employee) {
                 $q->orWhere('host_employee_id', $user->employee->id);
                 $heeftProfiel = true;
             }
 
-            // 🔥 VEILIGHEIDSCHECK 🔥
+          
             // Als dit een Admin is (of een medewerker waarbij vergeten is een medewerkers-profiel aan te maken)
             // dwingen we de query om NIKS te vinden. Anders lekken we alle bezoeken van het hele bedrijf!
             if (!$heeftProfiel) {
