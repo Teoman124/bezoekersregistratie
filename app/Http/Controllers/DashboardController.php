@@ -21,6 +21,8 @@ class DashboardController extends Controller
     {
         $user = $request->user();
 
+        
+
         // 🔥 CHECK: Is de gebruiker een visitor met een actief of gepland bezoek?
         if ($user && $user->visitor) {
             // Zoek een actief bezoek (ingecheckt maar nog niet uitgecheckt) zonder NDA

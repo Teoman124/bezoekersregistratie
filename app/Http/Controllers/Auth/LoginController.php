@@ -41,11 +41,20 @@ class LoginController extends Controller
 
         $request->session()->regenerate();
 
-        if ($request->user()?->role === 'visitor') {
-            return redirect()->route('visits.myvisits');
+        // Verkrijg de rol en maak deze ongevoelig voor spaties of hoofdletters
+        $role = trim(strtolower($request->user()?->role));
+
+        // 1. Is het een visitor? Stuur ALTIJD naar Visits/my
+        if ($role === 'visitor') {
+            return redirect()->route('visits.myvisits')->with('success', 'Welkom terug!');
         }
 
-        return redirect()->intended(route('dashboard', absolute: false))->with('success', 'Je bent succesvol ingelogd!');
+        // 2. Is het een admin of employee? Gebruik intended, met dashboard als fallback
+        if ($role === 'admin' || $role === 'employee') {
+            return redirect()->intended(route('dashboard', absolute: false))->with('success', 'Je bent succesvol ingelogd!');
+        }
+        
+        return redirect()->route('login')->with('error', 'Onbekende gebruikersrol. Neem contact op met de beheerder.');
     }
 
     public function createVisitor(): View

@@ -1,12 +1,13 @@
 <x-layouts.app>
 
+
     <div class="mb-6">
         <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ __('Dashboard')}}</h1>
         <p class="text-gray-600 dark:text-gray-400 mt-1">
             @if(in_array(auth()->user()?->role, ['admin', 'employee'], true))
             {{ __('Beheer gebruikers, medewerkers, bezoekers en bezoeken vanaf een plek.') }}
             @else
-            {{ __('Je bent ingelogd als visitor. Beheerfuncties zijn niet beschikbaar.') }}
+            {{ __('Je bent ingelogd als visitor.') }}
             @endif
         </p>
     </div>
@@ -222,7 +223,7 @@
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
         <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100">{{ __('Visitor account') }}</h2>
         <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
-            {{ __('Je bent ingelogd als visitor. Beheerfuncties zoals bezoekers, bezoeken, afdelingen en notificaties zijn niet beschikbaar.') }}
+            {{ __('Je bent ingelogd als visitor.') }}
         </p>
         <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
             {{ __('Wil je een afspraak maken? Stuur dan een bericht via de mailbox naar de medewerker.') }}

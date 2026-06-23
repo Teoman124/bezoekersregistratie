@@ -254,46 +254,52 @@ class VisitController extends Controller
         return view('visits.history', compact('visits'));
     }
 
-    public function myVisits(Request $request)
+    public function myvisits(Request $request)
     {
         $user = $request->user();
 
-        $query = Visit::with(['visitor.user', 'employee.user'])
-            ->where(function ($q) use ($user) {
+        // Haal bezoeken op met de benodigde relaties
+        $query = Visit::with(['visitor.user', 'employee.user', 'employee.department']);
 
-                // visitor ownership
-                if ($user->visitor) {
-                    $q->orWhere('visitor_id', $user->visitor->id);
-                }
+        $query->where(function ($q) use ($user) {
+            $heeftProfiel = false;
 
-                // employee ownership
-                if ($user->employee) {
-                    $q->orWhere('host_employee_id', $user->employee->id);
-                }
+            // 1. Heeft deze gebruiker een bezoekersprofiel?
+            if ($user->visitor) {
+                $q->orWhere('visitor_id', $user->visitor->id);
+                $heeftProfiel = true;
+            }
 
-                // optional: direct user link (als je dat gebruikt in DB)
-                $q->orWhere('user_id', $user->id);
-            });
+            // 2. Heeft deze gebruiker een medewerkersprofiel?
+            if ($user->employee) {
+                $q->orWhere('host_employee_id', $user->employee->id);
+                $heeftProfiel = true;
+            }
 
+            // 🔥 VEILIGHEIDSCHECK 🔥
+            // Als dit een Admin is (of een medewerker waarbij vergeten is een medewerkers-profiel aan te maken)
+            // dwingen we de query om NIKS te vinden. Anders lekken we alle bezoeken van het hele bedrijf!
+            if (!$heeftProfiel) {
+                $q->where('id', '<', 0);
+            }
+        });
+
+        // --- STATUS FILTERS ---
         if ($request->filled('status')) {
             if ($request->status === 'planned') {
                 $query->whereNull('check_in_time');
-            }
-
-            if ($request->status === 'in') {
-                $query->active();
-            }
-
-            if ($request->status === 'out') {
+            } elseif ($request->status === 'in') {
+                $query->active(); // Zorg dat scopeActive() bestaat in je Visit model, anders gebruik: ->whereNotNull('check_in_time')->whereNull('check_out_time')
+            } elseif ($request->status === 'out') {
                 $query->whereNotNull('check_out_time');
             }
         }
 
-        $visits = $query->latest('expected_arrival_time')->get();
+        // Haal de bezoeken op (nieuwste eerst)
+        $visits = $query->orderByDesc('expected_arrival_time')->get();
 
-        return view('visits.MyVisits', compact('visits'));
+        return view('visits.myvisits', compact('visits'));
     }
-
     public function create()
     {
         $employees = Employee::with('department')->get();

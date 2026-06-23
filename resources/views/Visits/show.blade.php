@@ -7,6 +7,12 @@
             </div>
             @if(in_array(auth()->user()?->role, ['admin', 'employee'], true))
             <a href="{{ route('visits.edit', $visit) }}" class="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white">{{ __('Edit') }}</a>
+            @if(auth()->user()?->role === 'employee')
+            <a href="{{ route('visits.create', ['visitor_id' => $visit->visitor_id, 'host_employee_id' => $visit->host_employee_id]) }}"
+            class="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium shadow transition">
+            {{ __('Vervolgafspraak plannen') }}
+    </a>
+@endif
             @endif
         </div>
 

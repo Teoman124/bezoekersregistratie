@@ -29,7 +29,7 @@ Route::get('/Visits/checkin/qr/{visit}', [VisitController::class, 'checkInViaQr'
     ->middleware('signed');
 
 Route::get('dashboard', [DashboardController::class, 'index'])
-    ->middleware(['auth', 'verified', 'check.role:admin,employee'])
+    ->middleware(['auth', 'verified', 'check.role:admin,employee,visitor', 'set.locale'])
     ->name('dashboard');
 
 // NDA Routes voor visitors
@@ -163,7 +163,9 @@ Route::get('/kiosk', [KioskController::class, 'index'])->name('kiosk.index');
 Route::post('/kiosk/checkin', [KioskController::class, 'checkIn'])->name('kiosk.checkin');
 Route::get('/kiosk/success', [KioskController::class, 'success'])->name('kiosk.success');
 Route::get('/kiosk/reset', [KioskController::class, 'reset'])->name('kiosk.reset');
-require __DIR__.'/auth.php';
+
 
 require __DIR__.'/auth.php';
+
+
 // niet meer veranderen nu T_T

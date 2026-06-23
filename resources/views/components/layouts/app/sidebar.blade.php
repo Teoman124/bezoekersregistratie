@@ -9,7 +9,7 @@
                 
                 <x-layouts.sidebar-link href="{{ route('home') }}" icon='fas-house' :active="request()->routeIs('home')">Home</x-layouts.sidebar-link>
 
-                 @if(in_array(auth()->user()?->role, ['admin', 'employee'], true))
+                 @if(in_array(auth()->user()?->role, ['admin', 'employee', 'visitor'], true))
                         <x-layouts.sidebar-link href="{{ route('dashboard') }}" icon='fas-tachometer-alt'
                             :active="request()->routeIs('dashboard*')">Dashboard</x-layouts.sidebar-link>
                 @endif
