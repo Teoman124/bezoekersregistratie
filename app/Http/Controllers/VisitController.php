@@ -146,7 +146,7 @@ class VisitController extends Controller
         ]);
     }
 
-  public function index(Request $request)
+    public function index(Request $request)
     {
         // Haal bezoeken op met de benodigde relaties
         $query = Visit::with(['visitor.user', 'employee.user', 'employee.department']);
@@ -199,7 +199,6 @@ class VisitController extends Controller
         $employees = Employee::with('user')->get()->sortBy(fn ($e) => $e->user?->name);
 
         return view('visits.index', compact('visits', 'departments', 'employees'));
-    
     }
 
     public function active(): View
@@ -421,13 +420,8 @@ class VisitController extends Controller
             'check_out_time' => null,
         ]);
 
-        if ($visit->employee && $visit->visitor && $visit->visitor->user) {
-            Notification::create([
-                'user_id' => $visit->employee->user_id,
-                'title' => 'Bezoeker ingecheckt',
-                'message' => 'Je bezoeker '.$visit->visitor->user->name.' is aangekomen.',
-            ]);
-        }
+        // 🔥 VERBETERD: Stuur notificatie + e-mail naar host en bezoeker
+        $this->sendCheckinNotifications($visit);
 
         return redirect()->route('visits.show', $visit)
             ->with('success', __('Visitor checked in via QR.'));
@@ -483,6 +477,13 @@ class VisitController extends Controller
             ->with('success', 'Visit deleted successfully.');
     }
 
+    /**
+     * 🔥 VERBETERDE checkIn() methode
+     * - Stuurt systeemnotificatie naar host
+     * - Stuurt e-mail naar host
+     * - Stuurt systeemnotificatie naar bezoeker (bevestiging)
+     * - Stuurt e-mail naar bezoeker (bevestiging)
+     */
     public function checkIn(Visit $visit)
     {
         // voorkom dubbel inchecken
@@ -495,13 +496,8 @@ class VisitController extends Controller
             'check_out_time' => null,
         ]);
 
-        if ($visit->employee && $visit->visitor && $visit->visitor->user) {
-            Notification::create([
-                'user_id' => $visit->employee->user_id,
-                'title' => 'Bezoeker ingecheckt',
-                'message' => 'Je bezoeker '.$visit->visitor->user->name.' is aangekomen.',
-            ]);
-        }
+        // 🔥 VERBETERD: Stuur notificaties + e-mails naar host en bezoeker
+        $this->sendCheckinNotifications($visit);
 
         return back()->with('success', __('Visitor checked in.'));
     }
@@ -608,8 +604,122 @@ class VisitController extends Controller
     }
 
     /**
-     * Toon de NDA pagina voor visitors (verplicht!)
+     * 🔥 NIEUWE METHODE: Stuur notificaties + e-mails bij check-in
+     * - Host: systeemnotificatie + e-mail ("Uw bezoeker is gearriveerd")
+     * - Bezoeker: systeemnotificatie + e-mail ("U bent ingecheckt")
      */
+    private function sendCheckinNotifications(Visit $visit): void
+    {
+        $visitorUser = $visit->visitor?->user;
+        $employeeUser = $visit->employee?->user;
+        $visitorName = $visitorUser?->name ?? 'een bezoeker';
+        $employeeName = $employeeUser?->name ?? 'de gastheer';
+        $companyName = $visit->visitor?->company_name ?? 'Geen bedrijf opgegeven';
+        $reason = $visit->reason_of_visit ?? 'Geen reden opgegeven';
+        $checkInTime = $visit->check_in_time?->format('d-m-Y H:i') ?? now()->format('d-m-Y H:i');
+        $arrivalTime = $visit->expected_arrival_time?->format('d-m-Y H:i') ?? 'onbekend';
+
+        $mailtrapApiService = app(MailtrapApiService::class);
+
+        // ──────────────────────────────────────────────
+        // 1. NOTIFICATIE + E-MAIL NAAR DE HOST (medewerker)
+        // ──────────────────────────────────────────────
+        if ($employeeUser && $employeeUser->id) {
+            // Systeemnotificatie voor host
+            Notification::create([
+                'user_id' => $employeeUser->id,
+                'title' => '✅ Bezoeker gearriveerd',
+                'message' => "Je bezoeker {$visitorName} is gearriveerd om {$checkInTime}. Reden: {$reason}.",
+            ]);
+
+            // E-mail naar host
+            if ($employeeUser->email) {
+                $hostSubject = "✅ Bezoeker gearriveerd: {$visitorName}";
+
+                $hostText = "Beste {$employeeName},\n\n"
+                    . "Je bezoeker {$visitorName} is gearriveerd!\n\n"
+                    . "📋 Bezoekgegevens:\n"
+                    . "- Naam: {$visitorName}\n"
+                    . "- Bedrijf: {$companyName}\n"
+                    . "- Reden: {$reason}\n"
+                    . "- Aankomsttijd: {$checkInTime}\n"
+                    . "- Verwachte tijd: {$arrivalTime}\n\n"
+                    . "Je kunt de bezoeker ophalen bij de receptie.\n\n"
+                    . "Met vriendelijke groet,\n"
+                    . "Bezoekersregistratie Systeem";
+
+                $hostHtml = "<p>Beste {$employeeName},</p>"
+                    . "<p>Je bezoeker <strong>{$visitorName}</strong> is gearriveerd!</p>"
+                    . "<h3>📋 Bezoekgegevens:</h3>"
+                    . "<ul>"
+                    . "<li><strong>Naam:</strong> {$visitorName}</li>"
+                    . "<li><strong>Bedrijf:</strong> {$companyName}</li>"
+                    . "<li><strong>Reden:</strong> {$reason}</li>"
+                    . "<li><strong>Aankomsttijd:</strong> {$checkInTime}</li>"
+                    . "<li><strong>Verwachte tijd:</strong> {$arrivalTime}</li>"
+                    . "</ul>"
+                    . "<p>Je kunt de bezoeker ophalen bij de receptie.</p>"
+                    . "<p>Met vriendelijke groet,<br>Bezoekersregistratie Systeem</p>";
+
+                $mailtrapApiService->send(
+                    $employeeUser->email,
+                    $hostSubject,
+                    $hostText,
+                    $hostHtml
+                );
+            }
+        }
+
+        // ──────────────────────────────────────────────
+        // 2. NOTIFICATIE + E-MAIL NAAR DE BEZOEKER
+        // ──────────────────────────────────────────────
+        if ($visitorUser && $visitorUser->id) {
+            // Systeemnotificatie voor bezoeker
+            Notification::create([
+                'user_id' => $visitorUser->id,
+                'title' => '✅ Je bent ingecheckt',
+                'message' => "Je bent succesvol ingecheckt bij {$employeeName} om {$checkInTime}.",
+            ]);
+
+            // E-mail naar bezoeker
+            if ($visitorUser->email) {
+                $visitorSubject = "✅ Je bent ingecheckt bij {$employeeName}";
+
+                $visitorText = "Beste {$visitorName},\n\n"
+                    . "Je bent succesvol ingecheckt bij {$employeeName}!\n\n"
+                    . "📋 Bezoekgegevens:\n"
+                    . "- Gastheer: {$employeeName}\n"
+                    . "- Bedrijf: {$companyName}\n"
+                    . "- Reden: {$reason}\n"
+                    . "- Aankomsttijd: {$checkInTime}\n"
+                    . "- Verwachte tijd: {$arrivalTime}\n\n"
+                    . "Welkom en veel succes met je afspraak!\n\n"
+                    . "Met vriendelijke groet,\n"
+                    . "Bezoekersregistratie Systeem";
+
+                $visitorHtml = "<p>Beste {$visitorName},</p>"
+                    . "<p>Je bent succesvol ingecheckt bij <strong>{$employeeName}</strong>!</p>"
+                    . "<h3>📋 Bezoekgegevens:</h3>"
+                    . "<ul>"
+                    . "<li><strong>Gastheer:</strong> {$employeeName}</li>"
+                    . "<li><strong>Bedrijf:</strong> {$companyName}</li>"
+                    . "<li><strong>Reden:</strong> {$reason}</li>"
+                    . "<li><strong>Aankomsttijd:</strong> {$checkInTime}</li>"
+                    . "<li><strong>Verwachte tijd:</strong> {$arrivalTime}</li>"
+                    . "</ul>"
+                    . "<p>Welkom en veel succes met je afspraak!</p>"
+                    . "<p>Met vriendelijke groet,<br>Bezoekersregistratie Systeem</p>";
+
+                $mailtrapApiService->send(
+                    $visitorUser->email,
+                    $visitorSubject,
+                    $visitorText,
+                    $visitorHtml
+                );
+            }
+        }
+    }
+
     /**
      * Toon de NDA pagina voor visitors (verplicht!)
      */
@@ -625,7 +735,6 @@ class VisitController extends Controller
             return redirect()->route('visits.myvisits')->with('success', __('You have already accepted the NDA.'));
         }
 
-        // 🔥 Gewijzigd: view in visits map
         return view('visits.nda', compact('visit'));
     }
 
@@ -665,7 +774,6 @@ class VisitController extends Controller
             ]);
         }
 
-        // 🔥 Gewijzigd: redirect naar /Visits/my in plaats van dashboard
         return redirect()->route('visits.myvisits')
             ->with('success', __('✅ Thank you! You have successfully accepted the NDA. Welcome!'));
     }
