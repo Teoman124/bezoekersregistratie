@@ -15,6 +15,14 @@ use App\Http\Controllers\KioskController;
 
 Route::view('/', 'home')->name('home');
 
+Route::get('/lang/{locale}', function (string $locale) {
+    if (! in_array($locale, ['en', 'nl'])) {
+        abort(400);
+    }
+    session()->put('locale', $locale);
+    return back();
+})->name('lang.switch');
+
 Route::get('/Visits/checkin/qr/{visit}', [VisitController::class, 'checkInViaQr'])
     ->name('visits.checkin.qr')
     ->middleware('signed');
