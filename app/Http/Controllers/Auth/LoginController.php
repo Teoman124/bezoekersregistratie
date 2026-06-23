@@ -41,8 +41,8 @@ class LoginController extends Controller
 
         $request->session()->regenerate();
 
-        if (auth()->user()->role === 'visitor') {
-            return redirect()->intended(route('visits.myvisits', absolute: false));
+        if ($request->user()?->role === 'visitor') {
+            return redirect()->route('visits.myvisits');
         }
 
         return redirect()->intended(route('dashboard', absolute: false))->with('success', 'Je bent succesvol ingelogd!');
@@ -79,7 +79,7 @@ class LoginController extends Controller
         RateLimiter::clear($this->visitorThrottleKey($request));
         $request->session()->regenerate();
 
-        return redirect()->intended(route('visits.myvisits', absolute: false));
+        return redirect()->route('visits.myvisits');
     }
 
     public function destroy(Request $request): RedirectResponse
@@ -90,7 +90,7 @@ class LoginController extends Controller
 
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        return redirect()->route('login')->with('success', __('You have been logged out.'));
     }
 
     protected function ensureIsNotRateLimited(Request $request): void

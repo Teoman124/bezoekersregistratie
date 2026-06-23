@@ -9,14 +9,12 @@ use App\Models\Notification;
 use App\Models\Visit;
 use App\Models\Visitor;
 use App\Services\MailtrapApiService;
-use Illuminate\Http\Request;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\URL;
 use Symfony\Component\HttpFoundation\StreamedResponse;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Carbon;
-
 
 class VisitController extends Controller
 {
@@ -326,7 +324,7 @@ class VisitController extends Controller
         // Controleer of de bezoeker al is ingecheckt
         if ($visit->check_in_time) {
             return redirect()->route('visits.show', $visit)
-                ->with('info', 'Deze bezoeker is al ingecheckt.');
+                ->with('info', __('This visitor is already checked in.'));
         }
 
         return view('visits.checkin', compact('visit'));
@@ -341,14 +339,14 @@ class VisitController extends Controller
         $request->validate([
             'agreed_to_rules' => 'required|accepted',
         ], [
-            'agreed_to_rules.required' => 'Je moet akkoord gaan met de huisregels en NDA om in te checken.',
-            'agreed_to_rules.accepted' => 'Je moet de huisregels en NDA accepteren om in te checken.',
+            'agreed_to_rules.required' => __('You must agree to the house rules and NDA to check in.'),
+            'agreed_to_rules.accepted' => __('You must accept the house rules and NDA to check in.'),
         ]);
 
         // Voorkom dubbel inchecken
         if ($visit->check_in_time) {
             return redirect()->route('visits.show', $visit)
-                ->with('error', 'Deze bezoeker is al ingecheckt.');
+                ->with('error', __('This visitor is already checked in.'));
         }
 
         // Update met check-in en NDA akkoord
@@ -365,19 +363,19 @@ class VisitController extends Controller
             Notification::create([
                 'user_id' => $visit->employee->user_id,
                 'title' => 'Bezoeker ingecheckt',
-                'message' => 'Je bezoeker ' . $visit->visitor->user->name . ' is aangekomen en heeft akkoord gegeven op de NDA/huisregels.',
+                'message' => __('Your visitor :name has arrived and agreed to the NDA/house rules.', ['name' => $visit->visitor->user->name]),
             ]);
         }
 
         return redirect()->route('visits.show', $visit)
-            ->with('success', 'Bezoeker succesvol ingecheckt en NDA akkoord vastgelegd.');
+            ->with('success', __('Visitor successfully checked in and NDA agreement recorded.'));
     }
 
     public function checkInViaQr(Visit $visit)
     {
         if ($visit->check_in_time) {
             return redirect()->route('visits.show', $visit)
-                ->with('error', 'Visitor is already checked in.');
+                ->with('error', __('Visitor is already checked in.'));
         }
 
         $visit->update([
@@ -394,7 +392,7 @@ class VisitController extends Controller
         }
 
         return redirect()->route('visits.show', $visit)
-            ->with('success', 'Visitor checked in via QR.');
+            ->with('success', __('Visitor checked in via QR.'));
     }
 
     public function edit(Visit $visit)
@@ -451,7 +449,7 @@ class VisitController extends Controller
     {
         // voorkom dubbel inchecken
         if ($visit->check_in_time) {
-            return back()->with('error', 'Visitor is already checked in.');
+            return back()->with('error', __('Visitor is already checked in.'));
         }
 
         $visit->update([
@@ -467,26 +465,26 @@ class VisitController extends Controller
             ]);
         }
 
-        return back()->with('success', 'Visitor checked in.');
+        return back()->with('success', __('Visitor checked in.'));
     }
 
     public function checkOut(Visit $visit)
     {
         // eerst ingecheckt?
         if (! $visit->check_in_time) {
-            return back()->with('error', 'Visitor has not checked in yet.');
+            return back()->with('error', __('Visitor has not checked in yet.'));
         }
 
         // voorkom dubbel uitchecken
         if ($visit->check_out_time) {
-            return back()->with('error', 'Visitor is already checked out.');
+            return back()->with('error', __('Visitor is already checked out.'));
         }
 
         $visit->update([
             'check_out_time' => now(),
         ]);
 
-        return back()->with('success', 'Visitor checked out.');
+        return back()->with('success', __('Visitor checked out.'));
     }
 
     private function getActiveVisits(): Collection
@@ -517,7 +515,8 @@ class VisitController extends Controller
             ->values();
     }
 
-    private function sendMail(Visit $visit, MailtrapApiService $mailtrapApiService): void    {
+    private function sendMail(Visit $visit, MailtrapApiService $mailtrapApiService): void
+    {
         $visitor = $visit->visitor?->user;
         $employee = $visit->employee?->user;
         $visitorName = $visitor?->name ?? 'Bezoeker';
@@ -569,24 +568,23 @@ class VisitController extends Controller
             );
         }
     }
-    
 
-        /**
+    /**
      * Toon de NDA pagina voor visitors (verplicht!)
      */
     /**
- * Toon de NDA pagina voor visitors (verplicht!)
- */
+     * Toon de NDA pagina voor visitors (verplicht!)
+     */
     public function showNdaPage(Request $request, Visit $visit): View|RedirectResponse
     {
         $user = $request->user();
-        
-        if (!$user || !$user->visitor || $user->visitor->id !== $visit->visitor_id) {
+
+        if (! $user || ! $user->visitor || $user->visitor->id !== $visit->visitor_id) {
             abort(403, 'Je hebt geen toegang tot dit bezoek.');
         }
 
         if ($visit->agreed_to_rules) {
-            return redirect()->route('visits.myvisits')->with('success', 'Je hebt de NDA al geaccepteerd.');
+            return redirect()->route('visits.myvisits')->with('success', __('You have already accepted the NDA.'));
         }
 
         // 🔥 Gewijzigd: view in visits map
@@ -594,21 +592,21 @@ class VisitController extends Controller
     }
 
     /**
- * Verwerk de NDA acceptatie
- */
+     * Verwerk de NDA acceptatie
+     */
     public function acceptNda(Request $request, Visit $visit): RedirectResponse
     {
         $user = $request->user();
-        
-        if (!$user || !$user->visitor || $user->visitor->id !== $visit->visitor_id) {
+
+        if (! $user || ! $user->visitor || $user->visitor->id !== $visit->visitor_id) {
             abort(403, 'Je hebt geen toegang tot dit bezoek.');
         }
 
         $request->validate([
             'agreed_to_rules' => 'required|accepted',
         ], [
-            'agreed_to_rules.required' => 'Je moet akkoord gaan met de NDA en huisregels.',
-            'agreed_to_rules.accepted' => 'Je moet de NDA en huisregels accepteren om verder te gaan.',
+            'agreed_to_rules.required' => __('You must agree to the NDA and house rules to continue.'),
+            'agreed_to_rules.accepted' => __('You must accept the NDA and house rules to continue.'),
         ]);
 
         $visit->update([
@@ -624,14 +622,14 @@ class VisitController extends Controller
             Notification::create([
                 'user_id' => $visit->employee->user_id,
                 'title' => '✅ NDA getekend door bezoeker',
-                'message' => $visit->visitor->user->name . ' heeft de NDA/huisregels geaccepteerd.',
+                'message' => $visit->visitor->user->name.' heeft de NDA/huisregels geaccepteerd.',
                 'link' => route('visits.show', $visit),
             ]);
         }
 
         // 🔥 Gewijzigd: redirect naar /Visits/my in plaats van dashboard
         return redirect()->route('visits.myvisits')
-            ->with('success', '✅ Bedankt! Je hebt de NDA succesvol geaccepteerd. Welkom!');
+            ->with('success', __('✅ Thank you! You have successfully accepted the NDA. Welcome!'));
     }
 
     /**
@@ -641,38 +639,38 @@ class VisitController extends Controller
     {
         $visitor = $visit->visitor?->user;
         $employee = $visit->employee?->user;
-        
-        if (!$visitor || !$visitor->email) {
+
+        if (! $visitor || ! $visitor->email) {
             return;
         }
 
         $mailtrapApiService = app(MailtrapApiService::class);
-        
-        $subject = '✅ Bevestiging NDA Akkoord - ' . now()->format('d-m-Y H:i');
-        
+
+        $subject = '✅ Bevestiging NDA Akkoord - '.now()->format('d-m-Y H:i');
+
         $text = "Beste {$visitor->name},\n\n"
-            . "Je hebt op " . now()->format('d-m-Y H:i') . " akkoord gegeven op de NDA en huisregels.\n\n"
-            . "📋 Bezoekgegevens:\n"
-            . "- Gastheer: " . ($employee?->name ?? 'Onbekend') . "\n"
-            . "- Datum: " . $visit->expected_arrival_time?->format('d-m-Y H:i') . "\n"
-            . "- Reden: " . ($visit->reason_of_visit ?? 'Niet opgegeven') . "\n"
-            . "- IP-adres: " . $visit->agreed_ip . "\n\n"
-            . "Dit is een officiële bevestiging van je akkoord. Bewaar deze email als bewijs.\n\n"
-            . "Met vriendelijke groet,\n"
-            . "Bezoekersregistratie Systeem";
-        
+            .'Je hebt op '.now()->format('d-m-Y H:i')." akkoord gegeven op de NDA en huisregels.\n\n"
+            ."📋 Bezoekgegevens:\n"
+            .'- Gastheer: '.($employee?->name ?? 'Onbekend')."\n"
+            .'- Datum: '.$visit->expected_arrival_time?->format('d-m-Y H:i')."\n"
+            .'- Reden: '.($visit->reason_of_visit ?? 'Niet opgegeven')."\n"
+            .'- IP-adres: '.$visit->agreed_ip."\n\n"
+            ."Dit is een officiële bevestiging van je akkoord. Bewaar deze email als bewijs.\n\n"
+            ."Met vriendelijke groet,\n"
+            .'Bezoekersregistratie Systeem';
+
         $html = "<p>Beste {$visitor->name},</p>"
-            . "<p>Je hebt op <strong>" . now()->format('d-m-Y H:i') . "</strong> akkoord gegeven op de NDA en huisregels.</p>"
-            . "<h3>📋 Bezoekgegevens:</h3>"
-            . "<ul>"
-            . "<li><strong>Gastheer:</strong> " . ($employee?->name ?? 'Onbekend') . "</li>"
-            . "<li><strong>Datum:</strong> " . $visit->expected_arrival_time?->format('d-m-Y H:i') . "</li>"
-            . "<li><strong>Reden:</strong> " . ($visit->reason_of_visit ?? 'Niet opgegeven') . "</li>"
-            . "<li><strong>IP-adres:</strong> " . $visit->agreed_ip . "</li>"
-            . "</ul>"
-            . "<p><em>Dit is een officiële bevestiging van je akkoord. Bewaar deze email als bewijs.</em></p>"
-            . "<p>Met vriendelijke groet,<br>Bezoekersregistratie Systeem</p>";
-        
+            .'<p>Je hebt op <strong>'.now()->format('d-m-Y H:i').'</strong> akkoord gegeven op de NDA en huisregels.</p>'
+            .'<h3>📋 Bezoekgegevens:</h3>'
+            .'<ul>'
+            .'<li><strong>Gastheer:</strong> '.($employee?->name ?? 'Onbekend').'</li>'
+            .'<li><strong>Datum:</strong> '.$visit->expected_arrival_time?->format('d-m-Y H:i').'</li>'
+            .'<li><strong>Reden:</strong> '.($visit->reason_of_visit ?? 'Niet opgegeven').'</li>'
+            .'<li><strong>IP-adres:</strong> '.$visit->agreed_ip.'</li>'
+            .'</ul>'
+            .'<p><em>Dit is een officiële bevestiging van je akkoord. Bewaar deze email als bewijs.</em></p>'
+            .'<p>Met vriendelijke groet,<br>Bezoekersregistratie Systeem</p>';
+
         $mailtrapApiService->send(
             $visitor->email,
             $subject,

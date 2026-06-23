@@ -1,7 +1,7 @@
 <x-layouts.app>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            📋 NDA & Huisregels
+            📋 {{ __('NDA and house rules') }}
         </h2>
     </x-slot>
 
@@ -16,34 +16,34 @@
                                 <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
                             </svg>
                             <div>
-                                <p class="font-medium text-red-700 dark:text-red-400">⚠️ Verplicht!</p>
-                                <p class="text-sm text-red-600 dark:text-red-300">Je moet akkoord gaan met de NDA en huisregels om je bezoek voort te zetten.</p>
+                                <p class="font-medium text-red-700 dark:text-red-400">⚠️ {{ __('Required!') }}</p>
+                                <p class="text-sm text-red-600 dark:text-red-300">{{ __('You must agree to the NDA and house rules to continue your visit.') }}</p>
                             </div>
                         </div>
                     </div>
 
                     <!-- Bezoek Info -->
                     <div class="mb-6 p-4 bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-800">
-                        <h3 class="font-semibold text-gray-700 dark:text-gray-300 mb-2">📋 Je Bezoekgegevens</h3>
+                        <h3 class="font-semibold text-gray-700 dark:text-gray-300 mb-2">📋 {{ __('Your visit details') }}</h3>
                         <div class="grid grid-cols-2 gap-3 text-sm">
                             <div>
-                                <span class="text-gray-500 dark:text-gray-400">Bezoeker:</span>
+                                <span class="text-gray-500 dark:text-gray-400">{{ __('Visitor') }}:</span>
                                 <span class="font-medium">{{ $visit->visitor->user->name }}</span>
                             </div>
                             <div>
-                                <span class="text-gray-500 dark:text-gray-400">Bedrijf:</span>
-                                <span class="font-medium">{{ $visit->visitor->company_name ?? 'Niet opgegeven' }}</span>
+                                <span class="text-gray-500 dark:text-gray-400">{{ __('Company') }}:</span>
+                                <span class="font-medium">{{ $visit->visitor->company_name ?? __('Not provided') }}</span>
                             </div>
                             <div>
-                                <span class="text-gray-500 dark:text-gray-400">Gastheer:</span>
+                                <span class="text-gray-500 dark:text-gray-400">{{ __('Host') }}:</span>
                                 <span class="font-medium">{{ $visit->employee->user->name }}</span>
                             </div>
                             <div>
-                                <span class="text-gray-500 dark:text-gray-400">Datum/Tijd:</span>
+                                <span class="text-gray-500 dark:text-gray-400">{{ __('Date/time') }}:</span>
                                 <span class="font-medium">{{ $visit->expected_arrival_time->format('d-m-Y H:i') }}</span>
                             </div>
                             <div class="col-span-2">
-                                <span class="text-gray-500 dark:text-gray-400">Reden:</span>
+                                <span class="text-gray-500 dark:text-gray-400">{{ __('Reason') }}:</span>
                                 <span class="font-medium">{{ $visit->reason_of_visit }}</span>
                             </div>
                         </div>
@@ -51,63 +51,48 @@
 
                     <!-- NDA Tekst -->
                     <div class="mb-6">
-                        <h3 class="font-bold text-lg text-gray-800 dark:text-gray-200 mb-3">📜 NDA & Huisregels</h3>
+                        <h3 class="font-bold text-lg text-gray-800 dark:text-gray-200 mb-3">📜 {{ __('NDA and house rules') }}</h3>
                         <div class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600 max-h-[400px] overflow-y-auto">
                             <div class="space-y-4 text-sm">
                                 <div class="pb-3 border-b border-gray-200 dark:border-gray-600">
-                                    <h4 class="font-bold text-gray-800 dark:text-gray-200">1. Vertrouwelijkheid (NDA)</h4>
+                                    <h4 class="font-bold text-gray-800 dark:text-gray-200">1. {{ __('Confidentiality (NDA)') }}</h4>
                                     <p class="text-gray-600 dark:text-gray-400 leading-relaxed mt-1">
-                                        Alle informatie, documenten, gesprekken en materialen die je tijdens dit bezoek 
-                                        verkrijgt, zijn <strong>strikt vertrouwelijk</strong>. Je mag deze informatie niet 
-                                        delen met derden zonder schriftelijke toestemming. Deze geheimhoudingsplicht 
-                                        blijft ook na het bezoek van kracht.
+                                        {{ __('All information, documents, conversations, and materials you obtain during this visit are strictly confidential. You may not share this information with third parties without written permission. This confidentiality obligation remains in force after your visit.') }}
                                     </p>
                                 </div>
 
                                 <div class="pb-3 border-b border-gray-200 dark:border-gray-600">
-                                    <h4 class="font-bold text-gray-800 dark:text-gray-200">2. Veiligheid</h4>
+                                    <h4 class="font-bold text-gray-800 dark:text-gray-200">2. {{ __('Safety') }}</h4>
                                     <p class="text-gray-600 dark:text-gray-400 leading-relaxed mt-1">
-                                        Volg altijd de instructies van het personeel op. Blijf in de aangewezen gebieden 
-                                        en draag een geldig legitimatiebewijs bij je. Bij noodgevallen volg je de 
-                                        evacuatie-instructies en meld je bij de verzamelplaats.
+                                        {{ __('Always follow staff instructions. Stay in the designated areas and carry a valid form of identification. In an emergency, follow the evacuation instructions and report to the assembly point.') }}
                                     </p>
                                 </div>
 
                                 <div class="pb-3 border-b border-gray-200 dark:border-gray-600">
-                                    <h4 class="font-bold text-gray-800 dark:text-gray-200">3. Fotografie & Opnames</h4>
+                                    <h4 class="font-bold text-gray-800 dark:text-gray-200">3. {{ __('Photography and recordings') }}</h4>
                                     <p class="text-gray-600 dark:text-gray-400 leading-relaxed mt-1">
-                                        Het is <strong>niet toegestaan</strong> om foto's, video's of audio-opnames te maken 
-                                        zonder expliciete toestemming van de gastheer. Dit geldt voor zowel het gebouw, 
-                                        de apparatuur als de inhoud van gesprekken.
+                                        {{ __('It is not allowed to take photos, videos, or audio recordings without explicit permission from the host. This applies to the building, equipment, and the content of conversations.') }}
                                     </p>
                                 </div>
 
                                 <div class="pb-3 border-b border-gray-200 dark:border-gray-600">
-                                    <h4 class="font-bold text-gray-800 dark:text-gray-200">4. Gedragscode</h4>
+                                    <h4 class="font-bold text-gray-800 dark:text-gray-200">4. {{ __('Code of conduct') }}</h4>
                                     <p class="text-gray-600 dark:text-gray-400 leading-relaxed mt-1">
-                                        Gedraag je respectvol en professioneel. Roken is niet toegestaan in het gebouw. 
-                                        Gebruik van mobiele telefoons is beperkt tot aangewezen gebieden. Houd rekening 
-                                        met andere aanwezigen en de bedrijfsvoering.
+                                        {{ __('Behave respectfully and professionally. Smoking is not allowed in the building. Mobile phone use is restricted to designated areas. Take other attendees and business operations into account.') }}
                                     </p>
                                 </div>
 
                                 <div class="pb-3 border-b border-gray-200 dark:border-gray-600">
-                                    <h4 class="font-bold text-gray-800 dark:text-gray-200">5. Gegevensbescherming (AVG)</h4>
+                                    <h4 class="font-bold text-gray-800 dark:text-gray-200">5. {{ __('Data protection (GDPR)') }}</h4>
                                     <p class="text-gray-600 dark:text-gray-400 leading-relaxed mt-1">
-                                        Je persoonsgegevens worden verwerkt volgens de Algemene Verordening 
-                                        Gegevensbescherming (AVG). Je hebt het recht om je gegevens in te zien, 
-                                        te corrigeren of te laten verwijderen. Je gegevens worden niet langer 
-                                        bewaard dan noodzakelijk.
+                                        {{ __('Your personal data is processed in accordance with the General Data Protection Regulation (GDPR). You have the right to inspect, correct, or request deletion of your data. Your data is not stored longer than necessary.') }}
                                     </p>
                                 </div>
 
                                 <div>
-                                    <h4 class="font-bold text-gray-800 dark:text-gray-200">6. Aansprakelijkheid</h4>
+                                    <h4 class="font-bold text-gray-800 dark:text-gray-200">6. {{ __('Liability') }}</h4>
                                     <p class="text-gray-600 dark:text-gray-400 leading-relaxed mt-1">
-                                        Je bent verantwoordelijk voor het naleven van deze regels. Bij overtreding 
-                                        kunnen maatregelen worden genomen, waaronder beëindiging van het bezoek en 
-                                        juridische stappen. De organisatie is niet aansprakelijk voor schade 
-                                        veroorzaakt door overtreding van deze regels.
+                                        {{ __('You are responsible for complying with these rules. In case of violation, measures may be taken, including ending the visit and taking legal action. The organization is not liable for damage caused by violating these rules.') }}
                                     </p>
                                 </div>
                             </div>
@@ -117,15 +102,20 @@
                     <!-- Formulier -->
                     <form method="POST" action="{{ route('visitor.nda.accept', $visit) }}" id="ndaForm">
                         @csrf
+
+                        <div id="nda-translations"
+                            data-ready-message="{{ __('You can now agree') }}"
+                            data-confirm-message="{{ __('Are you sure you want to agree to the NDA and house rules?') }}"
+                            class="hidden"></div>
                         
                         <!-- Timer -->
                         <div class="mb-4 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                             <div class="flex items-center justify-between">
-                                <p class="text-sm text-gray-600 dark:text-gray-400">
-                                    📖 Lees de voorwaarden aandachtig door.
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                                    📖 {{ __('Please read the terms carefully.') }}
                                 </p>
                                 <span id="timerDisplay" class="text-sm font-medium text-blue-600 dark:text-blue-400">
-                                    Wacht <span id="countdown" class="font-bold text-lg">10</span>s
+                                    {{ __('Wait') }} <span id="countdown" class="font-bold text-lg">10</span>s
                                 </span>
                             </div>
                             <div class="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2 mt-2">
@@ -144,15 +134,14 @@
                                        required
                                        disabled>
                                 <div>
-                                    <p class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                        Ik verklaar dat ik de NDA en huisregels volledig heb gelezen en begrepen
+                                        <p class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        {{ __('I confirm that I have fully read and understood the NDA and house rules') }}
                                     </p>
                                     <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                        Ik ga akkoord met alle bovenstaande voorwaarden. Dit akkoord wordt geregistreerd 
-                                        met datum, tijd en IP-adres ({{ request()->ip() }}).
+                                        {{ __('I agree to all of the above terms. This agreement is recorded with date, time, and IP address (:ip).', ['ip' => request()->ip()]) }}
                                     </p>
                                     <p class="text-xs text-red-500 dark:text-red-400 mt-1">
-                                        ⚠️ Zonder akkoord kun je je bezoek niet voortzetten.
+                                        ⚠️ {{ __('Without agreement, you cannot continue your visit.') }}
                                     </p>
                                 </div>
                             </label>
@@ -162,14 +151,14 @@
                         <div class="flex items-center justify-between pt-3 border-t border-gray-200 dark:border-gray-700">
                             <a href="{{ route('visits.myvisits') }}" 
                                class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
-                                ← Terug naar mijn bezoeken
+                                ← {{ __('Back to my visits') }}
                             </a>
                             <button type="submit" 
                                     id="ndaSubmitBtn"
                                     disabled
                                     class="px-8 py-3 bg-gray-400 dark:bg-gray-600 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors">
-                                <span id="btnText">✅ Ik ga akkoord</span>
-                                <span id="btnSpinner" class="hidden">⏳ Verwerken...</span>
+                                <span id="btnText">✅ {{ __('I agree') }}</span>
+                                <span id="btnSpinner" class="hidden">⏳ {{ __('Processing...') }}</span>
                             </button>
                         </div>
                     </form>
@@ -181,7 +170,8 @@
     <!-- Scripts - direct in de pagina -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('NDA pagina geladen!'); // Debug
+            console.log('NDA page loaded!'); // Debug
+            const ndaTranslations = document.getElementById('nda-translations');
             const checkbox = document.getElementById('ndaCheckbox');
             const submitBtn = document.getElementById('ndaSubmitBtn');
             const countdownEl = document.getElementById('countdown');
@@ -189,6 +179,8 @@
             const btnText = document.getElementById('btnText');
             const btnSpinner = document.getElementById('btnSpinner');
             const timerDisplay = document.getElementById('timerDisplay');
+            const readyMessage = ndaTranslations?.dataset.readyMessage ?? 'You can now agree';
+            const confirmMessage = ndaTranslations?.dataset.confirmMessage ?? 'Are you sure you want to agree to the NDA and house rules?';
             let seconds = 10;
             const totalSeconds = 10;
 
@@ -216,7 +208,7 @@
                         checkbox.disabled = false;
                     }
                     if (timerDisplay) {
-                        timerDisplay.innerHTML = '✅ Je kunt nu akkoord gaan';
+                        timerDisplay.innerHTML = '✅ ' + readyMessage;
                         timerDisplay.className = 'text-sm font-medium text-green-600 dark:text-green-400';
                     }
                     
@@ -255,7 +247,7 @@
                     }
                     
                     // Extra confirmatie
-                    if (!confirm('Weet je zeker dat je akkoord gaat met de NDA en huisregels?')) {
+                    if (!confirm(confirmMessage)) {
                         e.preventDefault();
                         return;
                     }

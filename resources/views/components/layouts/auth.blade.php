@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
 <head>
     <meta charset="UTF-8">
@@ -37,6 +37,14 @@
     :class="{ 'dark': darkMode }">
 
     <div class="min-h-screen flex flex-col">
+        @if (request()->routeIs('visitor.login', 'visitor.register', 'visitor.company-info'))
+            <div class="px-6 pt-6 sm:px-8">
+                <div class="flex justify-end">
+                    <x-language-switcher />
+                </div>
+            </div>
+        @endif
+
         <!-- Main Content -->
         <main class="flex-1 flex items-center justify-center p-6">
             <div class="w-full max-w-md">

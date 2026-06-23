@@ -2,14 +2,13 @@
     <div class="flex flex-col gap-6">
         <div class="flex items-start justify-between gap-4">
             <div>
-                <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Mailbox</h1>
-                <p class="text-sm text-gray-600 dark:text-gray-400">Bekijk je inbox en verzonden berichten op één plek.
-                </p>
+                <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ __('Mailbox') }}</h1>
+                <p class="text-sm text-gray-600 dark:text-gray-400">{{ __('View your inbox and sent messages in one place.') }}</p>
             </div>
 
             <a href="{{ route('mailbox.create') }}"
                 class="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">
-                Nieuw bericht
+                {{ __('New message') }}
             </a>
         </div>
 
@@ -17,14 +16,14 @@
             <div class="flex flex-wrap gap-2 border-b border-gray-200 px-4 py-3 dark:border-gray-700">
                 <a href="{{ route('mailbox.index') }}"
                     class="rounded-md px-3 py-2 text-sm font-medium {{ $folder !== 'sent' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200' }}">
-                    Inbox ({{ $inboxCount }})
+                    {{ __('Inbox') }} ({{ $inboxCount }})
                 </a>
                 <a href="{{ route('mailbox.index', ['folder' => 'sent']) }}"
                     class="rounded-md px-3 py-2 text-sm font-medium {{ $folder === 'sent' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200' }}">
-                    Verzonden ({{ $sentCount }})
+                    {{ __('Sent') }} ({{ $sentCount }})
                 </a>
                 <div class="ml-auto text-sm text-gray-600 dark:text-gray-400">
-                    {{ $notifications->count() }} berichten
+                    {{ $notifications->count() }} {{ __('messages') }}
                 </div>
             </div>
 
@@ -41,13 +40,13 @@
 
                                     <span
                                         class="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700 dark:bg-gray-700 dark:text-gray-200">
-                                        {{ $folder === 'sent' ? 'Verzonden' : 'Ontvangen' }}
+                                        {{ $folder === 'sent' ? __('Sent') : __('Received') }}
                                     </span>
 
                                     @if ($folder !== 'sent' && !$notification->read)
                                         <span
                                             class="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
-                                            Ongelezen
+                                            {{ __('Unread') }}
                                         </span>
                                     @endif
                                 </div>
@@ -58,20 +57,20 @@
 
                                 <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
                                     @if ($folder === 'sent')
-                                        Naar: {{ $notification->recipient?->name ?? 'Onbekende ontvanger' }} •
+                                        {{ __('To') }}: {{ $notification->recipient?->name ?? __('Unknown recipient') }} •
                                     @else
-                                        Van: {{ $notification->sender?->name ?? 'Systeem' }} •
+                                        {{ __('From') }}: {{ $notification->sender?->name ?? __('System') }} •
                                     @endif
                                     {{ optional($notification->created_at)->format('d-m-Y H:i') ?? '-' }}
                                 </p>
                             </div>
 
-                            <div class="text-sm font-medium text-blue-600">Bekijken</div>
+                            <div class="text-sm font-medium text-blue-600">{{ __('View') }}</div>
                         </div>
                     </a>
                 @empty
                     <div class="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">
-                        {{ $folder === 'sent' ? 'Je hebt nog geen verzonden berichten.' : 'Je inbox is leeg.' }}
+                        {{ $folder === 'sent' ? __('You have no sent messages yet.') : __('Your inbox is empty.') }}
                     </div>
                 @endforelse
             </div>
