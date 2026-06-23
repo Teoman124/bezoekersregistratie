@@ -2,7 +2,10 @@
     <div class="flex items-center justify-between mb-6">
         <div>
             <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Noodlijst</h1>
-            <p class="text-sm text-gray-600 dark:text-gray-400">Overzicht van alle aanwezige bezoekers en medewerkers voor een snelle ontruiming.</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400">
+                Overzicht van alle aanwezige bezoekers en medewerkers.
+                <span x-text="'Laatst bijgewerkt: ' + lastUpdated" class="text-xs text-gray-500"></span>
+            </p>
         </div>
         <div class="flex flex-wrap gap-2">
             <a href="{{ route('visits.active.export') }}" class="px-4 py-2 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white">
@@ -14,11 +17,17 @@
         </div>
     </div>
 
-    <div class="space-y-6">
+    <div x-data="presenceBoard()" class="space-y-6">
+        <!-- Bezoekers tabel -->
         <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-            <div class="border-b border-gray-200 dark:border-gray-700 p-4">
-                <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Aanwezige bezoekers</h2>
-                <p class="text-sm text-gray-600 dark:text-gray-400">Bezoekers die nu binnen zijn en hun contactpersoon.</p>
+            <div class="border-b border-gray-200 dark:border-gray-700 p-4 flex justify-between items-center">
+                <div>
+                    <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Aanwezige bezoekers</h2>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Bezoekers die nu binnen zijn en hun contactpersoon.</p>
+                </div>
+                <span class="text-sm font-medium text-blue-600 dark:text-blue-400">
+                    Aantal: <span x-text="count"></span>
+                </span>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-sm">
@@ -32,24 +41,26 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                        @forelse($visits as $visit)
+                        <template x-for="visit in visits" :key="visit.id">
                             <tr>
-                                <td class="px-4 py-3">{{ $visit->visitor?->user?->name ?? 'Onbekend' }}</td>
-                                <td class="px-4 py-3">{{ $visit->visitor?->company_name ?? '-' }}</td>
-                                <td class="px-4 py-3">{{ $visit->employee?->user?->name ?? 'Onbekend' }}</td>
-                                <td class="px-4 py-3">{{ $visit->check_in_time?->format('d-m-Y H:i') ?? '-' }}</td>
-                                <td class="px-4 py-3">{{ $visit->reason_of_visit ?: '-' }}</td>
+                                <td class="px-4 py-3" x-text="visit.visitor?.user?.name ?? 'Onbekend'"></td>
+                                <td class="px-4 py-3" x-text="visit.visitor?.company_name ?? '-'"></td>
+                                <td class="px-4 py-3" x-text="visit.employee?.user?.name ?? 'Onbekend'"></td>
+                                <td class="px-4 py-3" x-text="new Date(visit.check_in_time).toLocaleString()"></td>
+                                <td class="px-4 py-3" x-text="visit.reason_of_visit ?? '-'"></td>
                             </tr>
-                        @empty
-                            <tr>
-                                <td colspan="5" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">Er zijn geen aanwezige bezoekers.</td>
-                            </tr>
-                        @endforelse
+                        </template>
+                        <tr x-show="visits.length === 0">
+                            <td colspan="5" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">
+                                Er zijn geen aanwezige bezoekers.
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
         </div>
 
+        <!-- Medewerkers tabel (blijft statisch, of je kunt ook hier polling voor doen) -->
         <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
             <div class="border-b border-gray-200 dark:border-gray-700 p-4">
                 <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Aanwezige medewerkers</h2>
@@ -75,7 +86,9 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">Er zijn geen aanwezige medewerkers gevonden.</td>
+                                <td colspan="4" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">
+                                    Er zijn geen aanwezige medewerkers gevonden.
+                                </td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -83,4 +96,34 @@
             </div>
         </div>
     </div>
+
+    <script>
+        function presenceBoard() {
+            return {
+                visits: [],
+                count: 0,
+                lastUpdated: '',
+                init() {
+                    this.fetch();
+                    setInterval(() => this.fetch(), 10000); // elke 10 seconden
+                },
+                fetch() {
+                    fetch('/api/active-visits', {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            // Als je token-gebaseerde auth gebruikt, voeg dan de Authorization header toe:
+                            // 'Authorization': 'Bearer ' + localStorage.getItem('token')
+                        }
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        this.visits = data.visits;
+                        this.count = data.count;
+                        this.lastUpdated = new Date().toLocaleTimeString();
+                    })
+                    .catch(err => console.error('Polling error:', err));
+                }
+            }
+        }
+    </script>
 </x-layouts.app>
